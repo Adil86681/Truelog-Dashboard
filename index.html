@@ -6,693 +6,266 @@
   <title>Live Ticket Dashboard — TrueLog</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --bg:        #0f172a;
-      --surface:   #1e293b;
-      --border:    #334155;
-      --muted:     #64748b;
-      --subtle:    #94a3b8;
-      --text:      #e2e8f0;
-      --bright:    #f1f5f9;
-      --blue:      #3b82f6;
-      --green:     #10b981;
-      --amber:     #f59e0b;
-      --orange:    #f97316;
-      --purple:    #8b5cf6;
-      --cyan:      #06b6d4;
-      --red:       #ef4444;
-      --indigo:    #6366f1;
-      --gray:      #9ca3af;
+      --bg: #0f172a; --surface: #1e293b; --border: #334155;
+      --muted: #64748b; --subtle: #94a3b8; --text: #e2e8f0; --bright: #f1f5f9;
+      --blue: #3b82f6; --green: #10b981; --amber: #f59e0b; --orange: #f97316;
+      --purple: #8b5cf6; --cyan: #06b6d4; --red: #ef4444; --indigo: #6366f1;
     }
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
 
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
+    /* Header */
+    .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; flex-shrink: 0; }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .pulse-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--green); box-shadow: 0 0 7px var(--green); animation: pulse 2s infinite; flex-shrink: 0; }
+    .title { font-size: 17px; font-weight: 700; color: var(--bright); }
+    .badge { background: var(--border); color: var(--subtle); padding: 2px 10px; border-radius: 99px; font-size: 12px; font-weight: 600; }
+    .meta { color: var(--muted); font-size: 12px; }
+    .btn { border: none; border-radius: 7px; padding: 6px 14px; cursor: pointer; font-size: 13px; font-weight: 600; transition: opacity .15s; }
+    .btn:hover { opacity: .82; }
+    .btn-blue  { background: var(--blue); color: #fff; }
+    .btn-ghost { background: var(--border); color: var(--subtle); }
 
-    /* ── Header ── */
-    .header {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 16px 28px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-shrink: 0;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-    .header-left  { display: flex; align-items: center; gap: 14px; }
-    .header-right { display: flex; align-items: center; gap: 12px; }
+    /* Stats */
+    .stats { display: flex; gap: 10px; padding: 14px 24px; overflow-x: auto; flex-shrink: 0; background: var(--bg); }
+    .stat { background: var(--surface); border-radius: 9px; padding: 12px 16px; min-width: 100px; border-left: 4px solid; flex-shrink: 0; cursor: pointer; transition: opacity .15s; }
+    .stat:hover { opacity: .8; }
+    .stat.active { outline: 2px solid var(--blue); outline-offset: 1px; }
+    .stat-num { font-size: 24px; font-weight: 700; color: var(--bright); line-height: 1; }
+    .stat-label { font-size: 11px; color: var(--subtle); margin-top: 4px; }
 
-    .pulse-dot {
-      width: 10px; height: 10px; border-radius: 50%;
-      background: var(--green);
-      box-shadow: 0 0 8px var(--green);
-      animation: pulse 2s infinite;
-    }
-    .pulse-dot.error { background: var(--red); box-shadow: 0 0 8px var(--red); animation: none; }
-    .pulse-dot.loading { background: var(--amber); box-shadow: 0 0 8px var(--amber); animation: spin-pulse 1s infinite; }
-
-    .title { font-size: 18px; font-weight: 700; color: var(--bright); }
-    .badge-count {
-      background: var(--border);
-      color: var(--subtle);
-      padding: 3px 12px;
-      border-radius: 99px;
-      font-size: 12px;
-      font-weight: 600;
-    }
-
-    .last-updated { color: var(--muted); font-size: 12px; }
-    .countdown    { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
-
-    .btn {
-      border: none; border-radius: 8px;
-      padding: 7px 16px; cursor: pointer;
-      font-size: 13px; font-weight: 600;
-      transition: opacity .15s;
-    }
-    .btn:hover { opacity: .85; }
-    .btn-primary { background: var(--blue);   color: #fff; }
-    .btn-ghost   { background: var(--border); color: var(--subtle); }
-
-    /* ── Toolbar ── */
-    .toolbar {
-      padding: 14px 28px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-      background: var(--bg);
-    }
-    .search-wrap { position: relative; flex: 1; min-width: 220px; max-width: 380px; }
-    .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 14px; pointer-events: none; }
-    .search-input {
-      width: 100%;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 9px 14px 9px 36px;
-      border-radius: 8px;
-      font-size: 14px;
-      outline: none;
-      transition: border-color .15s;
-    }
+    /* Toolbar */
+    .toolbar { padding: 12px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: var(--bg); }
+    .search-wrap { position: relative; flex: 1; min-width: 200px; max-width: 360px; }
+    .search-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 13px; pointer-events: none; }
+    .search-input { width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 8px 12px 8px 33px; border-radius: 7px; font-size: 13px; outline: none; transition: border-color .15s; }
     .search-input:focus { border-color: var(--blue); }
+    .filter-sel { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 8px 10px; border-radius: 7px; font-size: 13px; outline: none; cursor: pointer; }
+    .filter-sel:focus { border-color: var(--blue); }
+    .results { color: var(--muted); font-size: 12px; margin-left: auto; }
 
-    select.filter-select {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 9px 12px;
-      border-radius: 8px;
-      font-size: 13px;
-      outline: none;
-      cursor: pointer;
-    }
-    select.filter-select:focus { border-color: var(--blue); }
-
-    .results-label { color: var(--muted); font-size: 13px; margin-left: auto; }
-
-    /* ── Stat Cards ── */
-    .stats {
-      display: flex;
-      gap: 12px;
-      padding: 16px 28px;
-      overflow-x: auto;
-      flex-shrink: 0;
-    }
-    .stat-card {
-      background: var(--surface);
-      border-radius: 10px;
-      padding: 14px 20px;
-      min-width: 120px;
-      border-left: 4px solid var(--border);
-      flex-shrink: 0;
-    }
-    .stat-card .stat-num  { font-size: 26px; font-weight: 700; color: var(--bright); line-height: 1; }
-    .stat-card .stat-label { font-size: 11px; color: var(--subtle); margin-top: 5px; }
-
-    /* ── Error Banner ── */
-    .error-banner {
-      display: none;
-      margin: 14px 28px 0;
-      background: #450a0a;
-      border: 1px solid #b91c1c;
-      border-radius: 8px;
-      padding: 12px 16px;
-      color: #fca5a5;
-      font-size: 13px;
-    }
-
-    /* ── Table ── */
-    .table-wrap {
-      flex: 1;
-      overflow: auto;
-      padding: 0 28px 28px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 820px;
-    }
-
-    thead th {
-      position: sticky; top: 0;
-      background: var(--bg);
-      padding: 10px 14px;
-      text-align: left;
-      color: var(--muted);
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: .06em;
-      font-weight: 600;
-      white-space: nowrap;
-      border-bottom: 1px solid var(--border);
-      user-select: none;
-      cursor: pointer;
-    }
+    /* Table */
+    .table-wrap { flex: 1; overflow: auto; padding: 0 24px 24px; }
+    table { width: 100%; border-collapse: collapse; min-width: 780px; }
+    thead th { position: sticky; top: 0; background: var(--bg); padding: 9px 12px; text-align: left; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; font-weight: 600; white-space: nowrap; border-bottom: 1px solid var(--border); cursor: pointer; user-select: none; }
     thead th:hover { color: var(--text); }
-    thead th .sort-icon { margin-left: 4px; opacity: .4; }
-    thead th.sorted .sort-icon { opacity: 1; color: var(--blue); }
-
-    tbody tr {
-      border-bottom: 1px solid #1a2540;
-      cursor: pointer;
-      transition: background .1s;
-    }
+    thead th.sorted { color: var(--blue); }
+    .sort-icon { margin-left: 3px; opacity: .5; }
+    .sorted .sort-icon { opacity: 1; }
+    tbody tr { border-bottom: 1px solid #16213a; cursor: pointer; transition: background .1s; }
     tbody tr:hover { background: var(--surface); }
     tbody tr.hidden { display: none; }
+    td { padding: 10px 12px; font-size: 13px; vertical-align: middle; }
+    .td-id   { color: var(--subtle); font-size: 11px; white-space: nowrap; }
+    .td-subj { color: var(--text); max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .td-date { color: var(--subtle); font-size: 12px; white-space: nowrap; }
+    .pill { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 600; white-space: nowrap; max-width: 200px; overflow: hidden; text-overflow: ellipsis; }
 
-    tbody td {
-      padding: 11px 14px;
-      font-size: 13px;
-      vertical-align: middle;
-    }
+    /* Empty */
+    .empty { display: none; text-align: center; padding: 50px; color: var(--muted); }
+    .empty-icon { font-size: 36px; margin-bottom: 10px; }
 
-    .td-id    { color: var(--subtle); font-size: 12px; white-space: nowrap; font-variant-numeric: tabular-nums; }
-    .td-subj  { color: var(--text); max-width: 340px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .td-date  { color: var(--subtle); font-size: 12px; white-space: nowrap; }
-    .td-cat   { color: var(--subtle); font-size: 12px; white-space: nowrap; }
-
-    .pill {
-      display: inline-block;
-      padding: 3px 9px;
-      border-radius: 99px;
-      font-size: 11px;
-      font-weight: 600;
-      white-space: nowrap;
-    }
-
-    /* ── Loading skeleton ── */
-    .skeleton { animation: shimmer 1.4s infinite; }
-    .sk-row td { padding: 14px; }
-    .sk-block {
-      display: inline-block;
-      height: 14px;
-      border-radius: 4px;
-      background: linear-gradient(90deg, var(--surface) 25%, var(--border) 50%, var(--surface) 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.4s infinite;
-    }
-
-    /* ── Empty state ── */
-    .empty-state {
-      display: none;
-      padding: 60px 28px;
-      text-align: center;
-      color: var(--muted);
-    }
-    .empty-state .empty-icon { font-size: 40px; margin-bottom: 12px; }
-    .empty-state p { font-size: 15px; }
-
-    /* ── Scrollbar ── */
+    /* Scrollbar */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: var(--surface); }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
-    /* ── Keyframes ── */
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
     @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-    @keyframes spin-pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
-
-    /* ── CORS warning overlay ── */
-    #cors-overlay {
-      display: none;
-      position: fixed; inset: 0; z-index: 999;
-      background: rgba(15,23,42,.92);
-      align-items: center; justify-content: center;
-    }
-    #cors-overlay.show { display: flex; }
-    .cors-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 36px 40px;
-      max-width: 520px;
-      text-align: center;
-    }
-    .cors-card h2 { color: var(--bright); font-size: 20px; margin-bottom: 12px; }
-    .cors-card p  { color: var(--subtle); font-size: 14px; line-height: 1.6; }
-    .cors-card code {
-      display: inline-block;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 10px 14px;
-      font-size: 13px;
-      color: var(--cyan);
-      margin: 14px 0;
-      word-break: break-all;
-    }
-    .cors-card .cors-steps { text-align: left; margin-top: 18px; }
-    .cors-card .cors-steps li { color: var(--subtle); font-size: 13px; margin-bottom: 8px; line-height: 1.5; }
-    .cors-card .cors-steps li strong { color: var(--text); }
   </style>
 </head>
 <body>
 
-<!-- CORS/Auth overlay -->
-<div id="cors-overlay">
-  <div class="cors-card">
-    <h2>⚠️ Authentication Required</h2>
-    <p>This dashboard fetches live data from:</p>
-    <code>https://inventory.truelog.com.sg</code>
-    <p>Because it's a cross-origin request, it requires you to be logged in and open this file from the same browser session. There are two easy ways to use it:</p>
-    <ol class="cors-steps">
-      <li><strong>Easiest:</strong> Open Chrome, log in to <em>inventory.truelog.com.sg</em>, then reload this tab. Make sure the site is open in another tab so your session cookies are active.</li>
-      <li><strong>Host it:</strong> Ask your dev team to host this HTML file at <em>inventory.truelog.com.sg/dashboard-live.html</em> — it will work seamlessly from there.</li>
-    </ol>
-    <button class="btn btn-primary" style="margin-top:20px;width:100%" onclick="retryFetch()">↻ Try Again</button>
-  </div>
-</div>
-
-<!-- Header -->
 <div class="header">
   <div class="header-left">
-    <div class="pulse-dot" id="statusDot"></div>
+    <div class="pulse-dot" id="dot"></div>
     <span class="title">Live Ticket Dashboard</span>
-    <span class="badge-count" id="totalBadge">— tickets</span>
+    <span class="badge" id="totalBadge">40 tickets</span>
   </div>
   <div class="header-right">
-    <span class="last-updated" id="lastUpdated">Never refreshed</span>
-    <span class="countdown" id="countdown"></span>
-    <button class="btn btn-primary" onclick="loadTickets()">↻ Refresh</button>
+    <span class="meta" id="lastUpdated">Loaded Apr 14, 2026</span>
+    <a href="https://inventory.truelog.com.sg/tickets/sf" target="_blank" class="btn btn-ghost">Open TrueLog ↗</a>
   </div>
 </div>
 
-<!-- Error banner -->
-<div class="error-banner" id="errorBanner"></div>
+<div class="stats" id="statsRow"></div>
 
-<!-- Stat cards -->
-<div class="stats" id="statsRow">
-  <!-- injected by JS -->
-</div>
-
-<!-- Toolbar -->
 <div class="toolbar">
   <div class="search-wrap">
     <span class="search-icon">🔍</span>
     <input class="search-input" id="searchInput" type="search" placeholder="Search tickets…" oninput="applyFilters()" />
   </div>
-  <select class="filter-select" id="statusFilter" onchange="applyFilters()">
+  <select class="filter-sel" id="catFilter" onchange="applyFilters()">
+    <option value="">All Categories</option>
+    <option>Asset Intake</option>
+    <option>Asset Checkout</option>
+    <option>Asset Return</option>
+    <option>Correction</option>
+    <option>General</option>
+  </select>
+  <select class="filter-sel" id="statusFilter" onchange="applyFilters()">
     <option value="">All Statuses</option>
   </select>
-  <select class="filter-select" id="categoryFilter" onchange="applyFilters()">
-    <option value="">All Categories</option>
-  </select>
-  <span class="results-label" id="resultsLabel"></span>
+  <span class="results" id="resultsLabel"></span>
 </div>
 
-<!-- Table -->
 <div class="table-wrap">
   <table>
     <thead>
       <tr>
-        <th onclick="sortBy('id')"         data-col="id">        Ticket <span class="sort-icon">↕</span></th>
-        <th onclick="sortBy('subject')"    data-col="subject">   Subject <span class="sort-icon">↕</span></th>
-        <th onclick="sortBy('category')"   data-col="category">  Category <span class="sort-icon">↕</span></th>
-        <th onclick="sortBy('outStatus')"  data-col="outStatus"> Outbound Status <span class="sort-icon">↕</span></th>
-        <th onclick="sortBy('outDate')"    data-col="outDate">   Outbound Date <span class="sort-icon">↕</span></th>
-        <th onclick="sortBy('inStatus')"   data-col="inStatus">  Inbound Status <span class="sort-icon">↕</span></th>
-        <th onclick="sortBy('received')"   data-col="received">  Received <span class="sort-icon">↕</span></th>
+        <th onclick="sortBy('id')"        data-col="id">       Ticket <span class="sort-icon">↕</span></th>
+        <th onclick="sortBy('subject')"   data-col="subject">  Subject <span class="sort-icon">↕</span></th>
+        <th onclick="sortBy('category')"  data-col="category"> Category <span class="sort-icon">↕</span></th>
+        <th onclick="sortBy('outStatus')" data-col="outStatus">Outbound Status <span class="sort-icon">↕</span></th>
+        <th onclick="sortBy('outDate')"   data-col="outDate">  Outbound Date <span class="sort-icon">↕</span></th>
+        <th onclick="sortBy('inStatus')"  data-col="inStatus"> Inbound Status <span class="sort-icon">↕</span></th>
+        <th onclick="sortBy('received')"  data-col="received"> Received <span class="sort-icon">↕</span></th>
       </tr>
     </thead>
-    <tbody id="tbody">
-      <!-- skeleton rows -->
-    </tbody>
+    <tbody id="tbody"></tbody>
   </table>
-  <div class="empty-state" id="emptyState">
-    <div class="empty-icon">🎫</div>
-    <p>No tickets match your search.</p>
-  </div>
+  <div class="empty" id="empty"><div class="empty-icon">🎫</div><p>No tickets match your search.</p></div>
 </div>
 
 <script>
-// ─────────────────────────────────────────────
-// Config
-// ─────────────────────────────────────────────
-const BASE_URL     = 'https://inventory.truelog.com.sg';
-const REFRESH_SECS = 30;
+const BASE = 'https://inventory.truelog.com.sg';
 
-// ─────────────────────────────────────────────
-// State
-// ─────────────────────────────────────────────
-let allTickets   = [];
-let sortCol      = 'id';
-let sortDir      = -1; // -1 = desc, 1 = asc
-let countdownVal = REFRESH_SECS;
-let intervalId   = null;
-let countdownId  = null;
+// ── Embedded ticket data (snapshot: Apr 14, 2026) ──
+const TICKETS = [
+  {id:"3666",subject:"Asset Checkout - Nava Gotlib (SentinelOne)",         category:"Asset Checkout",outDate:"Apr 13, '26",outStatus:"Pending",                                                                      inStatus:"Pending",                                                                        received:"-"},
+  {id:"3396",subject:"Asset Checkout - Ariel Zilbershteyin (SentinelOne)", category:"Asset Checkout",outDate:"Apr 6, '26", outStatus:"At HFD Warehouse",                                                             inStatus:"Pending",                                                                        received:"-"},
+  {id:"3366",subject:"Asset Checkout - SentinelOne IL (SentinelOne)",      category:"Asset Checkout",outDate:"Mar 31, '26",outStatus:"Pending - Tracking Number Not Found",                                          inStatus:"Pending",                                                                        received:"Apr 11, '26"},
+  {id:"3357",subject:"Asset Checkout - Ofer Rant (SentinelOne)",           category:"Asset Checkout",outDate:"Mar 28, '26",outStatus:"Delivered",                                                                    inStatus:"Pending",                                                                        received:"Apr 13, '26"},
+  {id:"3160",subject:"Asset Checkout - Metav Sharoni (SentinelOne)",       category:"Asset Checkout",outDate:"Mar 20, '26",outStatus:"Delivered",                                                                    inStatus:"Pending",                                                                        received:"Mar 24, '26"},
+  {id:"3104",subject:"Asset Checkout - 10 assets - Liel Rubin (SHURU) SELF COLLECTION",category:"Asset Checkout",outDate:"Mar 18, '26",outStatus:"Pending",                                                         inStatus:"Pending",                                                                        received:"Apr 13, '26"},
+  {id:"2997",subject:"Asset Return - Liav Lavi (SENTINELONE)",             category:"Asset Return",  outDate:"Mar 9, '26", outStatus:"Delivered",                                                                    inStatus:"Item was received on 2026-03-18 16:24:11 (GMT+8)",                               received:"-"},
+  {id:"2955",subject:"Asset Return - Yariv Levi (SENTINELONE)",            category:"Asset Return",  outDate:"Mar 4, '26", outStatus:"Delivered",                                                                    inStatus:"Item was received on 2026-03-18 00:53:46 (GMT+8)",                               received:"-"},
+  {id:"2940",subject:"Israel new laptops correction",                      category:"Correction",    outDate:"Mar 2, '26", outStatus:"Pending",                                                                      inStatus:"Pending",                                                                        received:"Apr 12, '26"},
+  {id:"2880",subject:"Asset Return - Bar Shofer",                          category:"Asset Return",  outDate:"Feb 26, '26",outStatus:"Pending",                                                                      inStatus:"Pending",                                                                        received:"-"},
+  {id:"3689",subject:"Asset Intake - April 14, 2026 - 100013123 Postman",  category:"Asset Intake",  outDate:"Apr 14, '26",outStatus:"Pending",                                                                      inStatus:"Pending",                                                                        received:"Apr 14, '26"},
+  {id:"3679",subject:"Asset Checkout - Amirah Rahman (Wise)",              category:"Asset Checkout",outDate:"Apr 14, '26",outStatus:"Label Generated",                                                              inStatus:"Pending",                                                                        received:"-"},
+  {id:"3675",subject:"Asset Return - Nada Azura (CLOUDFLARE)",             category:"Asset Return",  outDate:"Apr 14, '26",outStatus:"SingPost has received your order information, but not your item yet",          inStatus:"SingPost has received your order information, but not your item yet",             received:"-"},
+  {id:"3674",subject:"Asset Checkout - Yao Jie Lim (Abnormal.AI)",         category:"Asset Checkout",outDate:"Apr 14, '26",outStatus:"Pending",                                                                      inStatus:"Pending",                                                                        received:"-"},
+  {id:"3667",subject:"Asset Intake - April 13, 2026 - 100013123 Postman",  category:"Asset Intake",  outDate:"Apr 13, '26",outStatus:"Pending",                                                                      inStatus:"Pending",                                                                        received:"Apr 13, '26"},
+  {id:"3665",subject:"Asset Intake - 100013189 TANIUM April 13, 2026",     category:"Asset Intake",  outDate:"Apr 13, '26",outStatus:"Pending",                                                                      inStatus:"Pending",                                                                        received:"Apr 13, '26"},
+  {id:"3664",subject:"Asset Intake - April 13, 2026 - 100012968 Tanium",   category:"Asset Intake",  outDate:"Apr 13, '26",outStatus:"Pending",                                                                      inStatus:"Pending",                                                                        received:"Apr 13, '26"},
+  {id:"3661",subject:"Asset Return - Teddy Looi (CLOUDFLARE) - YubiKey 5C Nano FIPS",category:"Asset Return",outDate:"Apr 13, '26",outStatus:"Pending",                                                             inStatus:"Pending",                                                                        received:"-"},
+  {id:"3660",subject:"Asset Return - Teddy Looi (CLOUDFLARE) - YubiKey 5C NFC FIPS", category:"Asset Return",outDate:"Apr 13, '26",outStatus:"Pending",                                                             inStatus:"Pending",                                                                        received:"-"},
+  {id:"3655",subject:"Asset Return - Teddy Looi (CLOUDFLARE)",             category:"Asset Return",  outDate:"Apr 13, '26",outStatus:"SingPost has received your order information, but not your item yet",          inStatus:"Pending",                                                                        received:"-"},
+  {id:"3686",subject:"Asset Checkout - Hrushikesh Chidley (SentinelOne)",  category:"Asset Checkout",outDate:"Apr 14, '26",outStatus:"In Transit",                                                                   inStatus:"Pending",                                                                        received:"-"},
+  {id:"3685",subject:"Asset Checkout - Kumaran Kanagaraj (Digital.ai)",    category:"Asset Checkout",outDate:"Apr 14, '26",outStatus:"In Transit",                                                                   inStatus:"Pending",                                                                        received:"-"},
+  {id:"3684",subject:"Asset Checkout - Asim Javid (AppDirect)",            category:"Asset Checkout",outDate:"Apr 14, '26",outStatus:"Pending",                                                                      inStatus:"Pending",                                                                        received:"-"},
+  {id:"3683",subject:"Asset Checkout - Km Ganesh (Wise)",                  category:"Asset Checkout",outDate:"Apr 14, '26",outStatus:"Pending",                                                                      inStatus:"Pending",                                                                        received:"-"},
+  {id:"3682",subject:"Asset Checkout - Charu Singh (Wise)",                category:"Asset Checkout",outDate:"Apr 14, '26",outStatus:"Delivered",                                                                    inStatus:"Pending",                                                                        received:"Apr 14, '26"},
+  {id:"3681",subject:"Asset Checkout - Yash Airon (SentinelOne)",          category:"Asset Checkout",outDate:"Apr 14, '26",outStatus:"Pending",                                                                      inStatus:"Pending",                                                                        received:"-"},
+  {id:"3680",subject:"Asset Checkout - Yash Airon (SentinelOne)",          category:"Asset Checkout",outDate:"Apr 14, '26",outStatus:"Pending",                                                                      inStatus:"Pending",                                                                        received:"-"},
+  {id:"3673",subject:"Asset Checkout - Fatima Sultana (Wise)",             category:"Asset Checkout",outDate:"Apr 13, '26",outStatus:"In Transit",                                                                   inStatus:"Pending",                                                                        received:"-"},
+  {id:"3672",subject:"Asset Checkout - Tejaswini G (UiPath)",              category:"Asset Checkout",outDate:"Apr 13, '26",outStatus:"In Transit",                                                                   inStatus:"Pending",                                                                        received:"-"},
+  {id:"3671",subject:"Asset Return - Gourav Mittal (SENTINELONE) - Apple Computer",category:"Asset Return",outDate:"Apr 13, '26",outStatus:"Pending",                                                               inStatus:"Pending",                                                                        received:"-"},
+  {id:"2478",subject:"Asset Return - Lemar Martin (NYLAS)",                category:"Asset Return",  outDate:"Jan 25, '26",outStatus:"Delivered",                                                                    inStatus:"Pending",                                                                        received:"-"},
+  {id:"2477",subject:"Asset Return - Jad Karami (HACKERONE)",              category:"Asset Return",  outDate:"Jan 25, '26",outStatus:"Delivered",                                                                    inStatus:"Pending",                                                                        received:"-"},
+  {id:"2476",subject:"Asset Return - Meghan MacDonald (SPROUT SOCIAL)",    category:"Asset Return",  outDate:"Jan 25, '26",outStatus:"Delivered",                                                                    inStatus:"Pending",                                                                        received:"-"},
+  {id:"2475",subject:"Asset Checkout - A3113 (KTK4X75W6K) - KTK4X75W6K",  category:"Asset Checkout",outDate:"Jan 25, '26",outStatus:"Delivered",                                                                    inStatus:"Pending",                                                                        received:"Feb 13, '26"},
+  {id:"2474",subject:"Asset Checkout - S23RF (R5CT70MSP3K) - R5CT70MSP3K",category:"Asset Checkout",outDate:"Jan 25, '26",outStatus:"Delivered",                                                                    inStatus:"Pending",                                                                        received:"Feb 13, '26"},
+  {id:"2473",subject:"Asset Checkout - DTK246K0A (PO07-000003) - 5DV21N1001585",category:"Asset Checkout",outDate:"Jan 25, '26",outStatus:"Delivered",                                                              inStatus:"Pending",                                                                        received:"Feb 13, '26"},
+  {id:"2472",subject:"Asset Return - Osman Haybe (SPROUT SOCIAL)",         category:"Asset Return",  outDate:"Jan 25, '26",outStatus:"Delivered",                                                                    inStatus:"Pending",                                                                        received:"-"},
+  {id:"2471",subject:"Asset Return - Britt McVittie (SPROUT SOCIAL)",      category:"Asset Return",  outDate:"Jan 25, '26",outStatus:"Delivered",                                                                    inStatus:"Pending",                                                                        received:"-"},
+  {id:"2470",subject:"Asset Return - Jennifer Gill (COVER GENIUS)",        category:"Asset Return",  outDate:"Jan 25, '26",outStatus:"Delivered",                                                                    inStatus:"Pending",                                                                        received:"-"},
+  {id:"2469",subject:"Asset Checkout - A2485 (C4H917GN2J) - C4H917GN2J",  category:"Asset Checkout",outDate:"Jan 25, '26",outStatus:"Delivered",                                                                    inStatus:"Pending",                                                                        received:"Feb 13, '26"},
+];
 
-// ─────────────────────────────────────────────
-// Status → colour map
-// ─────────────────────────────────────────────
-const STATUS_COLORS = {
-  'delivered':      '#06b6d4',
-  'pending':        '#f97316',
-  'in transit':     '#f59e0b',
-  'in progress':    '#f59e0b',
-  'label generated':'#6366f1',
-  'at hfd':         '#8b5cf6',
-  'singpost':       '#3b82f6',
-  'received':       '#10b981',
-  'resolved':       '#10b981',
-  'cancelled':      '#ef4444',
-  'duplicate':      '#9ca3af',
-  'new':            '#3b82f6',
+// ── Status colours ──
+const COLORS = {
+  delivered:"#06b6d4", pending:"#f97316", "in transit":"#f59e0b",
+  "label generated":"#6366f1", "at hfd":"#8b5cf6", singpost:"#3b82f6",
+  received:"#10b981", resolved:"#10b981", cancelled:"#ef4444",
+  "in progress":"#f59e0b", new:"#3b82f6",
 };
+function sc(s=""){const l=s.toLowerCase();for(const[k,v]of Object.entries(COLORS))if(l.includes(k))return v;return"#6b7280";}
+function pill(t){if(!t||t==="-")return`<span style="color:var(--muted)">—</span>`;const c=sc(t);return`<span class="pill" style="background:${c}22;color:${c}" title="${t}">${t}</span>`;}
 
-function statusColor(s = '') {
-  const sl = s.toLowerCase();
-  for (const [k, v] of Object.entries(STATUS_COLORS))
-    if (sl.includes(k)) return v;
-  return '#6b7280';
+// ── Sort state ──
+let sortCol="id", sortDir=-1, activeStat=null;
+
+// ── Build status filter dropdown ──
+function buildStatusFilter(){
+  const statuses=[...new Set(TICKETS.map(t=>t.outStatus).filter(s=>s&&s!=="-"))].sort();
+  const sel=document.getElementById("statusFilter");
+  sel.innerHTML=`<option value="">All Statuses</option>`+statuses.map(s=>`<option>${s}</option>`).join("");
 }
 
-function pill(text) {
-  if (!text || text === '-') return `<span style="color:var(--muted);font-size:12px">—</span>`;
-  const c = statusColor(text);
-  return `<span class="pill" style="background:${c}22;color:${c}">${text}</span>`;
+// ── Stats ──
+const CAT_COLORS={"Asset Intake":"#10b981","Asset Checkout":"#3b82f6","Asset Return":"#f59e0b","Correction":"#8b5cf6","General":"#6b7280"};
+function renderStats(){
+  const byOut={};
+  TICKETS.forEach(t=>{byOut[t.outStatus]=(byOut[t.outStatus]||0)+1;});
+  const sorted=Object.entries(byOut).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const total=`<div class="stat${activeStat===null?' active':''}" style="border-left-color:var(--blue)" onclick="filterByStat(null)"><div class="stat-num">${TICKETS.length}</div><div class="stat-label">Total</div></div>`;
+  const cards=sorted.map(([s,n])=>`<div class="stat${activeStat===s?' active':''}" style="border-left-color:${sc(s)}" onclick="filterByStat('${s.replace(/'/g,"\\'")}')"><div class="stat-num">${n}</div><div class="stat-label">${s}</div></div>`).join("");
+  document.getElementById("statsRow").innerHTML=total+cards;
 }
 
-// ─────────────────────────────────────────────
-// Parse tickets from fetched HTML
-// ─────────────────────────────────────────────
-function parseTickets(htmlText) {
-  const parser = new DOMParser();
-  const doc    = parser.parseFromString(htmlText, 'text/html');
-  const rows   = doc.querySelectorAll('tbody tr');
-
-  return Array.from(rows).map(row => {
-    const cb = row.querySelector('[data-ticket-id]');
-    if (!cb) return null;
-    const id    = cb.getAttribute('data-ticket-id');
-    const cells = Array.from(row.querySelectorAll('td')).map(c => c.innerText.trim());
-
-    // subject is in cells[1]: "TICK-XXXX\n   Subject text"
-    const subjectRaw = (cells[1] || '').replace(/TICK-\d+\s*/, '').trim();
-    const subject    = subjectRaw.split('\n').map(s => s.trim()).filter(Boolean).join(' ');
-
-    // Category: try to infer from subject
-    let category = 'Unknown';
-    if (/asset intake/i.test(subject))   category = 'Asset Intake';
-    else if (/asset return/i.test(subject)) category = 'Asset Return';
-    else if (/asset checkout/i.test(subject)) category = 'Asset Checkout';
-    else if (/correction/i.test(subject))   category = 'Correction';
-
-    return {
-      id,
-      idNum:      parseInt(id, 10),
-      subject,
-      category,
-      outDate:    cells[2] || '-',
-      outLabel:   cells[3] || '-',
-      outStatus:  cells[4] || '-',
-      inDate:     cells[5] || '-',
-      inLabel:    cells[6] || '-',
-      inStatus:   cells[7] || '-',
-      received:   cells[8] || '-',
-    };
-  }).filter(Boolean);
-}
-
-// ─────────────────────────────────────────────
-// Fetch
-// ─────────────────────────────────────────────
-async function loadTickets() {
-  setStatus('loading');
-  try {
-    const res = await fetch(`${BASE_URL}/tickets/sf`, {
-      credentials: 'include',
-      headers: { 'Accept': 'text/html' }
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const html = await res.text();
-
-    // CORS check — if we got an HTML page back
-    if (!html.includes('ticket-checkbox') && !html.includes('data-ticket-id')) {
-      throw new Error('CORS or auth issue — could not parse ticket data from response.');
-    }
-
-    allTickets = parseTickets(html);
-    buildFilters();
-    renderTable();
-    renderStats();
-    setStatus('live');
-    document.getElementById('lastUpdated').textContent =
-      'Updated ' + new Date().toLocaleTimeString();
-    document.getElementById('totalBadge').textContent =
-      `${allTickets.length} tickets`;
-    hideError();
-    resetCountdown();
-
-  } catch (err) {
-    setStatus('error');
-    if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError') || err.message.includes('CORS')) {
-      document.getElementById('cors-overlay').classList.add('show');
-    } else {
-      showError(`Failed to load tickets: ${err.message}`);
-    }
-  }
-}
-
-function retryFetch() {
-  document.getElementById('cors-overlay').classList.remove('show');
-  loadTickets();
-}
-
-// ─────────────────────────────────────────────
-// Stats
-// ─────────────────────────────────────────────
-function renderStats() {
-  const byStatus = {};
-  allTickets.forEach(t => {
-    const s = t.outStatus || 'Unknown';
-    byStatus[s] = (byStatus[s] || 0) + 1;
-  });
-
-  const sorted = Object.entries(byStatus).sort((a, b) => b[1] - a[1]);
-  const total  = allTickets.length;
-
-  const totalCard = `
-    <div class="stat-card" style="border-left-color:var(--blue)">
-      <div class="stat-num">${total}</div>
-      <div class="stat-label">Total</div>
-    </div>`;
-
-  const cards = sorted.slice(0, 6).map(([s, n]) => `
-    <div class="stat-card" style="border-left-color:${statusColor(s)}">
-      <div class="stat-num">${n}</div>
-      <div class="stat-label">${s}</div>
-    </div>`).join('');
-
-  document.getElementById('statsRow').innerHTML = totalCard + cards;
-}
-
-// ─────────────────────────────────────────────
-// Filters
-// ─────────────────────────────────────────────
-function buildFilters() {
-  const statuses   = [...new Set(allTickets.map(t => t.outStatus).filter(s => s && s !== '-'))].sort();
-  const categories = [...new Set(allTickets.map(t => t.category))].sort();
-
-  const statusSel = document.getElementById('statusFilter');
-  const catSel    = document.getElementById('categoryFilter');
-
-  const curStatus = statusSel.value;
-  const curCat    = catSel.value;
-
-  statusSel.innerHTML = `<option value="">All Statuses</option>` +
-    statuses.map(s => `<option value="${s}" ${s===curStatus?'selected':''}>${s}</option>`).join('');
-
-  catSel.innerHTML = `<option value="">All Categories</option>` +
-    categories.map(c => `<option value="${c}" ${c===curCat?'selected':''}>${c}</option>`).join('');
-}
-
-function applyFilters() {
-  const q   = document.getElementById('searchInput').value.toLowerCase();
-  const st  = document.getElementById('statusFilter').value.toLowerCase();
-  const cat = document.getElementById('categoryFilter').value.toLowerCase();
-
-  const rows = document.querySelectorAll('#tbody tr[data-id]');
-  let visible = 0;
-
-  rows.forEach(row => {
-    const text = row.dataset.search || '';
-    const show = (!q   || text.includes(q))
-              && (!st  || (row.dataset.status  || '').toLowerCase() === st)
-              && (!cat || (row.dataset.category || '').toLowerCase() === cat.toLowerCase());
-    row.classList.toggle('hidden', !show);
-    if (show) visible++;
-  });
-
-  document.getElementById('resultsLabel').textContent =
-    visible === allTickets.length ? '' : `${visible} of ${allTickets.length} shown`;
-
-  document.getElementById('emptyState').style.display = visible === 0 ? 'block' : 'none';
-}
-
-// ─────────────────────────────────────────────
-// Sort
-// ─────────────────────────────────────────────
-function sortBy(col) {
-  if (sortCol === col) sortDir *= -1;
-  else { sortCol = col; sortDir = 1; }
-  renderTable();
-}
-
-function getSortVal(t, col) {
-  switch (col) {
-    case 'id':       return t.idNum;
-    case 'subject':  return t.subject.toLowerCase();
-    case 'category': return t.category.toLowerCase();
-    case 'outStatus':return t.outStatus.toLowerCase();
-    case 'outDate':  return t.outDate;
-    case 'inStatus': return t.inStatus.toLowerCase();
-    case 'received': return t.received;
-    default: return '';
-  }
-}
-
-// ─────────────────────────────────────────────
-// Render table
-// ─────────────────────────────────────────────
-function renderTable() {
-  const sorted = [...allTickets].sort((a, b) => {
-    const av = getSortVal(a, sortCol);
-    const bv = getSortVal(b, sortCol);
-    if (av < bv) return -sortDir;
-    if (av > bv) return  sortDir;
-    return 0;
-  });
-
-  // Update sort indicators
-  document.querySelectorAll('thead th').forEach(th => {
-    th.classList.remove('sorted');
-    if (th.dataset.col === sortCol) {
-      th.classList.add('sorted');
-      th.querySelector('.sort-icon').textContent = sortDir === 1 ? '↑' : '↓';
-    } else {
-      const si = th.querySelector('.sort-icon');
-      if (si) si.textContent = '↕';
-    }
-  });
-
-  document.getElementById('tbody').innerHTML = sorted.map(t => `
-    <tr data-id="${t.id}"
-        data-search="${[t.id, t.subject, t.category, t.outStatus, t.inStatus].join(' ').toLowerCase()}"
-        data-status="${t.outStatus.toLowerCase()}"
-        data-category="${t.category}"
-        onclick="window.open('${BASE_URL}/tickets/${t.id}','_blank')"
-        title="Open TICK-${t.id} in new tab">
-      <td class="td-id">TICK-${t.id}</td>
-      <td class="td-subj" title="${t.subject}">${t.subject}</td>
-      <td class="td-cat">${t.category}</td>
-      <td>${pill(t.outStatus)}</td>
-      <td class="td-date">${t.outDate !== '-' ? t.outDate : '—'}</td>
-      <td>${pill(t.inStatus)}</td>
-      <td class="td-date">${t.received !== '-' ? t.received : '—'}</td>
-    </tr>`).join('');
-
+function filterByStat(val){
+  activeStat=val;
+  const sel=document.getElementById("statusFilter");
+  sel.value=val||"";
+  renderStats();
   applyFilters();
 }
 
-// ─────────────────────────────────────────────
-// Skeleton loader
-// ─────────────────────────────────────────────
-function showSkeleton() {
-  document.getElementById('tbody').innerHTML = Array.from({length: 10}, (_, i) => `
-    <tr class="sk-row">
-      <td><div class="sk-block" style="width:${60+Math.random()*10}px"></div></td>
-      <td><div class="sk-block" style="width:${180+Math.random()*120}px"></div></td>
-      <td><div class="sk-block" style="width:${80+Math.random()*40}px"></div></td>
-      <td><div class="sk-block" style="width:${70+Math.random()*30}px"></div></td>
-      <td><div class="sk-block" style="width:${70+Math.random()*20}px"></div></td>
-      <td><div class="sk-block" style="width:${70+Math.random()*30}px"></div></td>
-      <td><div class="sk-block" style="width:${60+Math.random()*20}px"></div></td>
-    </tr>`).join('');
+// ── Render table ──
+function renderTable(){
+  const data=[...TICKETS].sort((a,b)=>{
+    let av=a[sortCol]??"",bv=b[sortCol]??"";
+    if(sortCol==="id"){av=parseInt(a.id);bv=parseInt(b.id);}
+    else{av=av.toLowerCase();bv=bv.toLowerCase();}
+    return av<bv?-sortDir:av>bv?sortDir:0;
+  });
+  document.querySelectorAll("thead th").forEach(th=>{
+    th.classList.remove("sorted");
+    const si=th.querySelector(".sort-icon");
+    if(th.dataset.col===sortCol){th.classList.add("sorted");if(si)si.textContent=sortDir===1?"↑":"↓";}
+    else if(si)si.textContent="↕";
+  });
+  document.getElementById("tbody").innerHTML=data.map(t=>`
+    <tr data-id="${t.id}" data-search="${[t.id,t.subject,t.category,t.outStatus,t.inStatus].join(" ").toLowerCase()}"
+        data-status="${t.outStatus}" data-cat="${t.category}"
+        onclick="window.open('${BASE}/tickets/${t.id}','_blank')" title="Open in TrueLog">
+      <td class="td-id">TICK-${t.id}</td>
+      <td class="td-subj" title="${t.subject}">${t.subject}</td>
+      <td><span style="color:${CAT_COLORS[t.category]||'var(--subtle)'};font-size:12px;font-weight:600">${t.category}</span></td>
+      <td>${pill(t.outStatus)}</td>
+      <td class="td-date">${t.outDate!=="-"?t.outDate:"—"}</td>
+      <td>${pill(t.inStatus)}</td>
+      <td class="td-date">${t.received!=="-"?t.received:"—"}</td>
+    </tr>`).join("");
+  applyFilters();
 }
 
-// ─────────────────────────────────────────────
-// Status dot
-// ─────────────────────────────────────────────
-function setStatus(s) {
-  const dot = document.getElementById('statusDot');
-  dot.className = 'pulse-dot ' + (s === 'live' ? '' : s === 'loading' ? 'loading' : 'error');
+// ── Filters ──
+function applyFilters(){
+  const q=document.getElementById("searchInput").value.toLowerCase();
+  const st=document.getElementById("statusFilter").value;
+  const cat=document.getElementById("catFilter").value;
+  const rows=document.querySelectorAll("#tbody tr");
+  let vis=0;
+  rows.forEach(r=>{
+    const show=(!q||r.dataset.search.includes(q))&&(!st||r.dataset.status===st)&&(!cat||r.dataset.cat===cat);
+    r.classList.toggle("hidden",!show);
+    if(show)vis++;
+  });
+  document.getElementById("resultsLabel").textContent=vis===TICKETS.length?"":`${vis} of ${TICKETS.length} shown`;
+  document.getElementById("empty").style.display=vis===0?"block":"none";
 }
 
-// ─────────────────────────────────────────────
-// Error banner
-// ─────────────────────────────────────────────
-function showError(msg) {
-  const el = document.getElementById('errorBanner');
-  el.textContent = '⚠️ ' + msg;
-  el.style.display = 'block';
-}
-function hideError() {
-  document.getElementById('errorBanner').style.display = 'none';
-}
+// ── Sort ──
+function sortBy(col){sortDir=sortCol===col?-sortDir:1;sortCol=col;renderTable();}
 
-// ─────────────────────────────────────────────
-// Countdown timer
-// ─────────────────────────────────────────────
-function resetCountdown() {
-  countdownVal = REFRESH_SECS;
-  clearInterval(countdownId);
-  countdownId = setInterval(() => {
-    countdownVal--;
-    document.getElementById('countdown').textContent =
-      countdownVal > 0 ? `(next refresh in ${countdownVal}s)` : '';
-    if (countdownVal <= 0) {
-      clearInterval(countdownId);
-    }
-  }, 1000);
-}
-
-// ─────────────────────────────────────────────
-// Auto-refresh
-// ─────────────────────────────────────────────
-function startAutoRefresh() {
-  clearInterval(intervalId);
-  intervalId = setInterval(loadTickets, REFRESH_SECS * 1000);
-}
-
-// ─────────────────────────────────────────────
-// Init
-// ─────────────────────────────────────────────
-showSkeleton();
-loadTickets();
-startAutoRefresh();
+// ── Init ──
+buildStatusFilter();
+renderStats();
+renderTable();
 </script>
 </body>
 </html>
