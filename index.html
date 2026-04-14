@@ -1,271 +1,85 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Live Ticket Dashboard — TrueLog</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TrueLog Ticket Dashboard — Bookmarklet Installer</title>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --bg: #0f172a; --surface: #1e293b; --border: #334155;
-      --muted: #64748b; --subtle: #94a3b8; --text: #e2e8f0; --bright: #f1f5f9;
-      --blue: #3b82f6; --green: #10b981; --amber: #f59e0b; --orange: #f97316;
-      --purple: #8b5cf6; --cyan: #06b6d4; --red: #ef4444; --indigo: #6366f1;
-    }
-    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
-
-    /* Header */
-    .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; flex-shrink: 0; }
-    .header-left { display: flex; align-items: center; gap: 12px; }
-    .header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-    .pulse-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--green); box-shadow: 0 0 7px var(--green); animation: pulse 2s infinite; flex-shrink: 0; }
-    .title { font-size: 17px; font-weight: 700; color: var(--bright); }
-    .badge { background: var(--border); color: var(--subtle); padding: 2px 10px; border-radius: 99px; font-size: 12px; font-weight: 600; }
-    .meta { color: var(--muted); font-size: 12px; }
-    .btn { border: none; border-radius: 7px; padding: 6px 14px; cursor: pointer; font-size: 13px; font-weight: 600; transition: opacity .15s; }
-    .btn:hover { opacity: .82; }
-    .btn-blue  { background: var(--blue); color: #fff; }
-    .btn-ghost { background: var(--border); color: var(--subtle); }
-
-    /* Stats */
-    .stats { display: flex; gap: 10px; padding: 14px 24px; overflow-x: auto; flex-shrink: 0; background: var(--bg); }
-    .stat { background: var(--surface); border-radius: 9px; padding: 12px 16px; min-width: 100px; border-left: 4px solid; flex-shrink: 0; cursor: pointer; transition: opacity .15s; }
-    .stat:hover { opacity: .8; }
-    .stat.active { outline: 2px solid var(--blue); outline-offset: 1px; }
-    .stat-num { font-size: 24px; font-weight: 700; color: var(--bright); line-height: 1; }
-    .stat-label { font-size: 11px; color: var(--subtle); margin-top: 4px; }
-
-    /* Toolbar */
-    .toolbar { padding: 12px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: var(--bg); }
-    .search-wrap { position: relative; flex: 1; min-width: 200px; max-width: 360px; }
-    .search-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 13px; pointer-events: none; }
-    .search-input { width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 8px 12px 8px 33px; border-radius: 7px; font-size: 13px; outline: none; transition: border-color .15s; }
-    .search-input:focus { border-color: var(--blue); }
-    .filter-sel { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 8px 10px; border-radius: 7px; font-size: 13px; outline: none; cursor: pointer; }
-    .filter-sel:focus { border-color: var(--blue); }
-    .results { color: var(--muted); font-size: 12px; margin-left: auto; }
-
-    /* Table */
-    .table-wrap { flex: 1; overflow: auto; padding: 0 24px 24px; }
-    table { width: 100%; border-collapse: collapse; min-width: 780px; }
-    thead th { position: sticky; top: 0; background: var(--bg); padding: 9px 12px; text-align: left; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; font-weight: 600; white-space: nowrap; border-bottom: 1px solid var(--border); cursor: pointer; user-select: none; }
-    thead th:hover { color: var(--text); }
-    thead th.sorted { color: var(--blue); }
-    .sort-icon { margin-left: 3px; opacity: .5; }
-    .sorted .sort-icon { opacity: 1; }
-    tbody tr { border-bottom: 1px solid #16213a; cursor: pointer; transition: background .1s; }
-    tbody tr:hover { background: var(--surface); }
-    tbody tr.hidden { display: none; }
-    td { padding: 10px 12px; font-size: 13px; vertical-align: middle; }
-    .td-id   { color: var(--subtle); font-size: 11px; white-space: nowrap; }
-    .td-subj { color: var(--text); max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .td-date { color: var(--subtle); font-size: 12px; white-space: nowrap; }
-    .pill { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 600; white-space: nowrap; max-width: 200px; overflow: hidden; text-overflow: ellipsis; }
-
-    /* Empty */
-    .empty { display: none; text-align: center; padding: 50px; color: var(--muted); }
-    .empty-icon { font-size: 36px; margin-bottom: 10px; }
-
-    /* Scrollbar */
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: var(--surface); }
-    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
-    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{background:#0f172a;color:#e2e8f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 20px}
+    .card{background:#1e293b;border:1px solid #334155;border-radius:16px;padding:40px;max-width:620px;width:100%}
+    h1{font-size:22px;font-weight:700;color:#f1f5f9;margin-bottom:8px}
+    .subtitle{color:#64748b;font-size:14px;margin-bottom:32px;line-height:1.55}
+    .step{display:flex;gap:16px;margin-bottom:28px;align-items:flex-start}
+    .step-num{background:#3b82f6;color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;margin-top:1px}
+    .step-body h3{font-size:14px;font-weight:600;color:#f1f5f9;margin-bottom:5px}
+    .step-body p{font-size:13px;color:#94a3b8;line-height:1.55}
+    .step-body strong{color:#e2e8f0}
+    .bm-wrap{background:#0f172a;border:2px dashed #334155;border-radius:12px;padding:24px;text-align:center;margin:12px 0 6px}
+    .bm-wrap p{font-size:12px;color:#64748b;margin-bottom:14px}
+    .bm-link{display:inline-block;background:linear-gradient(135deg,#1d4ed8,#7c3aed);color:#fff;padding:12px 28px;border-radius:10px;font-size:15px;font-weight:700;text-decoration:none;cursor:grab;box-shadow:0 4px 15px rgba(59,130,246,.35)}
+    .bm-link:hover{opacity:.9}
+    .tip{background:#0f172a;border:1px solid #1e3a5f;border-radius:8px;padding:10px 14px;margin-top:6px;font-size:12px;color:#64748b;line-height:1.5}
+    .tip strong{color:#94a3b8}
+    hr{border:none;border-top:1px solid #334155;margin:28px 0}
+    .features{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
+    .feat{background:#0f172a;border-radius:8px;padding:10px 14px;font-size:12px;color:#64748b;border-left:3px solid #334155}
+    .feat strong{display:block;color:#94a3b8;margin-bottom:2px}
+    .badge{display:inline-block;background:#10b98122;color:#10b981;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600;margin-left:8px;vertical-align:middle}
+    .refresh-tip{background:#1e3a5f;border-radius:8px;padding:14px 16px;font-size:12px;color:#7dd3fc;line-height:1.6;margin-top:24px}
+    code{background:#0f172a;padding:2px 6px;border-radius:4px;font-family:monospace;color:#7dd3fc}
   </style>
 </head>
 <body>
+<div class="card">
+  <h1>TrueLog Ticket Dashboard <span class="badge">Bookmarklet</span></h1>
+  <p class="subtitle">A one-click live dashboard that overlays all your tickets on TrueLog. No server, no CORS issues — it reads the data the page already loads (all 2,834+ tickets).</p>
 
-<div class="header">
-  <div class="header-left">
-    <div class="pulse-dot" id="dot"></div>
-    <span class="title">Live Ticket Dashboard</span>
-    <span class="badge" id="totalBadge">40 tickets</span>
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-body">
+      <h3>Drag to your bookmarks bar</h3>
+      <p>Drag the button below into your Chrome bookmarks bar. If you don't see it, press <strong>Ctrl+Shift+B</strong> (Windows) or <strong>Cmd+Shift+B</strong> (Mac) to show it.</p>
+      <div class="bm-wrap">
+        <p>Drag this into your bookmarks bar</p>
+        <a class="bm-link" href="javascript:(function()%20%7B%20const%20existing%20%3D%20document.getElementById('__tl_dash__')%3B%20if%20(existing)%20%7B%20existing.remove()%3B%20return%3B%20%7D%20const%20SC%20%3D%20%7B%20'pending'%3A'%23f97316'%2C'delivered'%3A'%2306b6d4'%2C'in%20transit'%3A'%23f59e0b'%2C%20'label%20generated'%3A'%236366f1'%2C'resolved'%3A'%2310b981'%2C'new'%3A'%233b82f6'%2C%20'at%20hfd'%3A'%238b5cf6'%2C'singpost'%3A'%233b82f6'%2C'cancelled'%3A'%23ef4444'%2C%20'processing'%3A'%236366f1'%2C'on%20hold'%3A'%238b5cf6'%2C'in%20progress'%3A'%23f59e0b'%2C%20'out%20for%20delivery'%3A'%2306b6d4'%2C'pending%20pickup'%3A'%23f59e0b'%2C%20%7D%3B%20function%20sColor(s)%7B%20const%20l%3D(s%7C%7C'').toLowerCase()%3B%20for(const%5Bk%2Cv%5D%20of%20Object.entries(SC))%20if(l.includes(k))%20return%20v%3B%20return%20'%236b7280'%3B%20%7D%20function%20pill(t%2Csize)%7B%20if(!t%7C%7Ct%3D%3D%3D'-'%7C%7Ct%3D%3D%3D'null'%7C%7Ct%3D%3D%3Dnull)%20return%20%60%3Cspan%20style%3D%22color%3A%23475569%3Bfont-size%3A11px%22%3E%E2%80%94%3C%2Fspan%3E%60%3B%20const%20c%3DsColor(t)%3B%20return%20%60%3Cspan%20style%3D%22display%3Ainline-block%3Bpadding%3A2px%20%24%7Bsize%3F'6px'%3A'8px'%7D%3Bborder-radius%3A99px%3Bfont-size%3A%24%7Bsize%7C%7C11%7Dpx%3Bfont-weight%3A600%3Bbackground%3A%24%7Bc%7D22%3Bcolor%3A%24%7Bc%7D%3Bwhite-space%3Anowrap%3Bmax-width%3A180px%3Boverflow%3Ahidden%3Btext-overflow%3Aellipsis%22%20title%3D%22%24%7Bt%7D%22%3E%24%7Bt%7D%3C%2Fspan%3E%60%3B%20%7D%20const%20PRIO_C%20%3D%20%7BHigh%3A'%23ef4444'%2CMedium%3A'%23f59e0b'%2CLow%3A'%2310b981'%7D%3B%20function%20prioPill(p)%7B%20const%20c%3DPRIO_C%5Bp%5D%7C%7C'%236b7280'%3B%20return%20%60%3Cspan%20style%3D%22display%3Ainline-block%3Bpadding%3A2px%208px%3Bborder-radius%3A99px%3Bfont-size%3A11px%3Bfont-weight%3A600%3Bbackground%3A%24%7Bc%7D22%3Bcolor%3A%24%7Bc%7D%22%3E%24%7Bp%7C%7C'%E2%80%94'%7D%3C%2Fspan%3E%60%3B%20%7D%20const%20CAT_C%20%3D%20%7B'Asset%20Intake'%3A'%2310b981'%2C'Asset%20Checkout'%3A'%233b82f6'%2C'Asset%20Return'%3A'%23f59e0b'%2C'Correction'%3A'%238b5cf6'%7D%3B%20function%20catColor(c)%7B%20return%20CAT_C%5Bc%5D%7C%7C'%2394a3b8'%3B%20%7D%20let%20filtered%20%3D%20%5B%5D%2C%20sortCol%3D'id'%2C%20sortDir%3D-1%2C%20page%3D1%3B%20const%20PER_PAGE%20%3D%2050%3B%20const%20raw%20%3D%20()%20%3D%3E%20typeof%20allTickets%20!%3D%3D%20'undefined'%20%3F%20allTickets%20%3A%20%5B%5D%3B%20function%20getFilters()%20%7B%20return%20%7B%20q%3A%20(document.getElementById('__tl_q__')%3F.value%7C%7C'').toLowerCase()%2C%20cat%3A%20document.getElementById('__tl_cat__')%3F.value%7C%7C''%2C%20st%3A%20document.getElementById('__tl_st__')%3F.value%7C%7C''%2C%20prio%3A%20document.getElementById('__tl_prio__')%3F.value%7C%7C''%2C%20queue%3Adocument.getElementById('__tl_queue__')%3F.value%7C%7C''%2C%20%7D%3B%20%7D%20function%20applyFilters()%20%7B%20const%20%7Bq%2Ccat%2Cst%2Cprio%2Cqueue%7D%20%3D%20getFilters()%3B%20filtered%20%3D%20raw().filter(t%20%3D%3E%20%7B%20if(q%20%26%26%20!%5Bt.id%2Ct.subject%2Ct.customer_name%2Ct.assignee%2Ct.queue%2Ct.shipping_tracking%2Ct.return_tracking%5D.join('%20').toLowerCase().includes(q))%20return%20false%3B%20if(cat%20%26%26%20t.category%20!%3D%3D%20cat)%20return%20false%3B%20if(st%20%26%26%20t.status%20!%3D%3D%20st)%20return%20false%3B%20if(prio%20%26%26%20t.priority%20!%3D%3D%20prio)%20return%20false%3B%20if(queue%20%26%26%20t.queue%20!%3D%3D%20queue)%20return%20false%3B%20return%20true%3B%20%7D)%3B%20page%20%3D%201%3B%20renderTable()%3B%20renderStats()%3B%20%7D%20function%20sortBy(col)%20%7B%20if(sortCol%3D%3D%3Dcol)%20sortDir*%3D-1%3B%20else%20%7B%20sortCol%3Dcol%3B%20sortDir%3D1%3B%20%7D%20renderTable()%3B%20%7D%20function%20goToPage(p)%20%7B%20const%20maxPage%20%3D%20Math.ceil(filtered.length%2FPER_PAGE)%3B%20if(p%3C1%7C%7Cp%3EmaxPage)%20return%3B%20page%3Dp%3B%20renderTable()%3B%20%7D%20function%20renderStats()%20%7B%20const%20tickets%20%3D%20raw()%3B%20const%20total%20%3D%20filtered.length%3B%20const%20byCat%3D%7B%7D%2C%20bySt%3D%7B%7D%3B%20filtered.forEach(t%20%3D%3E%20%7B%20byCat%5Bt.category%5D%3D(byCat%5Bt.category%5D%7C%7C0)%2B1%3B%20bySt%5Bt.status%5D%3D(bySt%5Bt.status%5D%7C%7C0)%2B1%3B%20%7D)%3B%20const%20catCards%20%3D%20Object.entries(byCat).sort((a%2Cb)%3D%3Eb%5B1%5D-a%5B1%5D).slice(0%2C4).map((%5Bc%2Cn%5D)%3D%3E%20%60%3Cdiv%20style%3D%22background%3A%231e293b%3Bborder-radius%3A8px%3Bpadding%3A10px%2014px%3Bmin-width%3A100px%3Bborder-left%3A3px%20solid%20%24%7BcatColor(c)%7D%3Bflex-shrink%3A0%22%3E%20%3Cdiv%20style%3D%22font-size%3A20px%3Bfont-weight%3A700%3Bcolor%3A%23f1f5f9%22%3E%24%7Bn%7D%3C%2Fdiv%3E%20%3Cdiv%20style%3D%22font-size%3A10px%3Bcolor%3A%2394a3b8%3Bmargin-top%3A2px%22%3E%24%7Bc%7D%3C%2Fdiv%3E%20%3C%2Fdiv%3E%60).join('')%3B%20const%20stCards%20%3D%20Object.entries(bySt).sort((a%2Cb)%3D%3Eb%5B1%5D-a%5B1%5D).slice(0%2C5).map((%5Bs%2Cn%5D)%3D%3E%20%60%3Cdiv%20style%3D%22background%3A%231e293b%3Bborder-radius%3A8px%3Bpadding%3A10px%2014px%3Bmin-width%3A100px%3Bborder-left%3A3px%20solid%20%24%7BsColor(s)%7D%3Bflex-shrink%3A0%22%3E%20%3Cdiv%20style%3D%22font-size%3A20px%3Bfont-weight%3A700%3Bcolor%3A%23f1f5f9%22%3E%24%7Bn%7D%3C%2Fdiv%3E%20%3Cdiv%20style%3D%22font-size%3A10px%3Bcolor%3A%2394a3b8%3Bmargin-top%3A2px%22%3E%24%7Bs%7D%3C%2Fdiv%3E%20%3C%2Fdiv%3E%60).join('')%3B%20const%20statsEl%20%3D%20document.getElementById('__tl_stats__')%3B%20if(statsEl)%20statsEl.innerHTML%20%3D%20%60%20%3Cdiv%20style%3D%22background%3A%231e293b%3Bborder-radius%3A8px%3Bpadding%3A10px%2014px%3Bmin-width%3A90px%3Bborder-left%3A3px%20solid%20%233b82f6%3Bflex-shrink%3A0%22%3E%20%3Cdiv%20style%3D%22font-size%3A20px%3Bfont-weight%3A700%3Bcolor%3A%23f1f5f9%22%3E%24%7Btotal.toLocaleString()%7D%3C%2Fdiv%3E%20%3Cdiv%20style%3D%22font-size%3A10px%3Bcolor%3A%2394a3b8%3Bmargin-top%3A2px%22%3E%24%7Btotal%3D%3D%3Draw().length%3F'All%20Tickets'%3A'Filtered'%7D%3C%2Fdiv%3E%20%3C%2Fdiv%3E%20%3Cdiv%20style%3D%22width%3A1px%3Bbackground%3A%23334155%3Bmargin%3A0%204px%3Bflex-shrink%3A0%22%3E%3C%2Fdiv%3E%20%24%7BcatCards%7D%20%3Cdiv%20style%3D%22width%3A1px%3Bbackground%3A%23334155%3Bmargin%3A0%204px%3Bflex-shrink%3A0%22%3E%3C%2Fdiv%3E%20%24%7BstCards%7D%60%3B%20%7D%20function%20renderTable()%20%7B%20const%20sorted%20%3D%20%5B...filtered%5D.sort((a%2Cb)%3D%3E%7B%20let%20av%2Cbv%3B%20if(sortCol%3D%3D%3D'id')%7Bav%3Da.id%3Bbv%3Db.id%3B%7D%20else%20if(sortCol%3D%3D%3D'created')%7Bav%3Da.created_at%3Bbv%3Db.created_at%3B%7D%20else%20if(sortCol%3D%3D%3D'sla')%7Bav%3Da.sla_days_remaining%3F%3F999%3Bbv%3Db.sla_days_remaining%3F%3F999%3B%7D%20else%7Bav%3D(a%5BsortCol%5D%7C%7C'').toLowerCase()%3Bbv%3D(b%5BsortCol%5D%7C%7C'').toLowerCase()%3B%7D%20return%20av%3Cbv%3F-sortDir%3Aav%3Ebv%3FsortDir%3A0%3B%20%7D)%3B%20const%20totalPages%20%3D%20Math.ceil(sorted.length%2FPER_PAGE)%3B%20const%20pageTickets%20%3D%20sorted.slice((page-1)*PER_PAGE%2C%20page*PER_PAGE)%3B%20document.querySelectorAll('.__tl_th__').forEach(th%20%3D%3E%20%7B%20const%20col%20%3D%20th.dataset.col%3B%20th.style.color%20%3D%20col%3D%3D%3DsortCol%20%3F%20'%233b82f6'%20%3A%20'%2364748b'%3B%20const%20arrow%20%3D%20th.querySelector('.__tl_arrow__')%3B%20if(arrow)%20arrow.textContent%20%3D%20col%3D%3D%3DsortCol%20%3F%20(sortDir%3D%3D%3D1%3F'%E2%86%91'%3A'%E2%86%93')%20%3A%20'%E2%86%95'%3B%20%7D)%3B%20const%20tbody%20%3D%20document.getElementById('__tl_tbody__')%3B%20if(!tbody)%20return%3B%20tbody.innerHTML%20%3D%20pageTickets.map(t%20%3D%3E%20%7B%20const%20sla%20%3D%20t.sla_days_remaining%3B%20const%20slaColor%20%3D%20sla%3D%3D%3Dnull%3F'%23475569'%3Asla%3C%3D0%3F'%23ef4444'%3Asla%3C%3D2%3F'%23f97316'%3A'%2310b981'%3B%20const%20slaText%20%3D%20sla%3D%3D%3Dnull%3F'%E2%80%94'%3A%60%24%7Bsla%7Dd%60%3B%20const%20created%20%3D%20t.created_at%20%3F%20t.created_at.substring(0%2C10)%20%3A%20'%E2%80%94'%3B%20return%20%60%3Ctr%20style%3D%22border-bottom%3A1px%20solid%20%231a2540%3Bcursor%3Apointer%22%20onmouseover%3D%22this.style.background%3D'%231e293b'%22%20onmouseout%3D%22this.style.background%3D'transparent'%22%20onclick%3D%22window.open('%2Ftickets%2F%24%7Bt.id%7D'%2C'_blank')%22%3E%20%3Ctd%20style%3D%22padding%3A9px%2010px%3Bcolor%3A%2364748b%3Bfont-size%3A11px%3Bwhite-space%3Anowrap%22%3ETICK-%24%7Bt.id%7D%3C%2Ftd%3E%20%3Ctd%20style%3D%22padding%3A9px%2010px%3Bmax-width%3A280px%3Boverflow%3Ahidden%3Btext-overflow%3Aellipsis%3Bwhite-space%3Anowrap%3Bcolor%3A%23e2e8f0%3Bfont-size%3A13px%22%20title%3D%22%24%7B(t.subject%7C%7C'').replace(%2F%22%2Fg%2C%22'%22)%7D%22%3E%20%24%7Bt.subject%7C%7C''%7D%20%24%7Bt.customer_name%3F%60%3Cdiv%20style%3D%22font-size%3A11px%3Bcolor%3A%23475569%3Bmargin-top%3A1px%22%3E%24%7Bt.customer_name%7D%3C%2Fdiv%3E%60%3A''%7D%20%3C%2Ftd%3E%20%3Ctd%20style%3D%22padding%3A9px%2010px%3Bwhite-space%3Anowrap%22%3E%3Cspan%20style%3D%22color%3A%24%7BcatColor(t.category)%7D%3Bfont-size%3A11px%3Bfont-weight%3A600%22%3E%24%7Bt.category%7C%7C'%E2%80%94'%7D%3C%2Fspan%3E%3C%2Ftd%3E%20%3Ctd%20style%3D%22padding%3A9px%2010px%22%3E%24%7Bpill(t.status)%7D%3C%2Ftd%3E%20%3Ctd%20style%3D%22padding%3A9px%2010px%22%3E%24%7BprioPill(t.priority)%7D%3C%2Ftd%3E%20%3Ctd%20style%3D%22padding%3A9px%2010px%3Bcolor%3A%2364748b%3Bfont-size%3A12px%3Bwhite-space%3Anowrap%22%3E%24%7Bt.queue%7C%7C'%E2%80%94'%7D%3C%2Ftd%3E%20%3Ctd%20style%3D%22padding%3A9px%2010px%3Bcolor%3A%2394a3b8%3Bfont-size%3A12px%3Bwhite-space%3Anowrap%22%3E%24%7Bt.assignee%7C%7C'%E2%80%94'%7D%3C%2Ftd%3E%20%3Ctd%20style%3D%22padding%3A9px%2010px%3Bfont-size%3A12px%3Bfont-weight%3A600%3Bcolor%3A%24%7BslaColor%7D%3Bwhite-space%3Anowrap%22%3E%24%7BslaText%7D%3C%2Ftd%3E%20%3Ctd%20style%3D%22padding%3A9px%2010px%3Bcolor%3A%23475569%3Bfont-size%3A11px%3Bwhite-space%3Anowrap%22%3E%24%7Bcreated%7D%3C%2Ftd%3E%20%3C%2Ftr%3E%60%3B%20%7D).join('')%3B%20const%20paginationEl%20%3D%20document.getElementById('__tl_pages__')%3B%20if(paginationEl)%20%7B%20const%20countLabel%20%3D%20%60%3Cspan%20style%3D%22color%3A%2364748b%3Bfont-size%3A12px%22%3E%24%7B((page-1)*PER_PAGE%2B1).toLocaleString()%7D%E2%80%93%24%7BMath.min(page*PER_PAGE%2Csorted.length).toLocaleString()%7D%20of%20%24%7Bsorted.length.toLocaleString()%7D%3C%2Fspan%3E%60%3B%20const%20prevBtn%20%3D%20%60%3Cbutton%20onclick%3D%22__tlGoPage(%24%7Bpage-1%7D)%22%20%24%7Bpage%3C%3D1%3F'disabled'%3A''%7D%20style%3D%22background%3A%231e293b%3Bborder%3A1px%20solid%20%23334155%3Bcolor%3A%24%7Bpage%3C%3D1%3F'%23334155'%3A'%2394a3b8'%7D%3Bpadding%3A4px%2010px%3Bborder-radius%3A6px%3Bcursor%3A%24%7Bpage%3C%3D1%3F'default'%3A'pointer'%7D%3Bfont-size%3A13px%22%3E%E2%80%B9%3C%2Fbutton%3E%60%3B%20const%20nextBtn%20%3D%20%60%3Cbutton%20onclick%3D%22__tlGoPage(%24%7Bpage%2B1%7D)%22%20%24%7Bpage%3E%3DtotalPages%3F'disabled'%3A''%7D%20style%3D%22background%3A%231e293b%3Bborder%3A1px%20solid%20%23334155%3Bcolor%3A%24%7Bpage%3E%3DtotalPages%3F'%23334155'%3A'%2394a3b8'%7D%3Bpadding%3A4px%2010px%3Bborder-radius%3A6px%3Bcursor%3A%24%7Bpage%3E%3DtotalPages%3F'default'%3A'pointer'%7D%3Bfont-size%3A13px%22%3E%E2%80%BA%3C%2Fbutton%3E%60%3B%20const%20pageInfo%20%3D%20%60%3Cspan%20style%3D%22color%3A%2394a3b8%3Bfont-size%3A12px%22%3EPage%20%24%7Bpage%7D%20of%20%24%7BtotalPages.toLocaleString()%7D%3C%2Fspan%3E%60%3B%20paginationEl.innerHTML%20%3D%20%60%3Cdiv%20style%3D%22display%3Aflex%3Balign-items%3Acenter%3Bgap%3A10px%3Bpadding%3A12px%2016px%22%3E%24%7BcountLabel%7D%24%7BprevBtn%7D%24%7BpageInfo%7D%24%7BnextBtn%7D%3C%2Fdiv%3E%60%3B%20%7D%20document.getElementById('__tl_count__').textContent%20%3D%20%60%24%7Braw().length.toLocaleString()%7D%20tickets%60%3B%20%7D%20function%20opts(arr%2C%20placeholder)%20%7B%20return%20%60%3Coption%20value%3D%22%22%3E%24%7Bplaceholder%7D%3C%2Foption%3E%60%20%2B%20%5B...new%20Set(arr.filter(Boolean))%5D.sort().map(v%3D%3E%60%3Coption%3E%24%7Bv%7D%3C%2Foption%3E%60).join('')%3B%20%7D%20const%20tickets%20%3D%20raw()%3B%20const%20categories%20%3D%20tickets.map(t%3D%3Et.category)%3B%20const%20statuses%20%3D%20tickets.map(t%3D%3Et.status)%3B%20const%20priorities%20%3D%20tickets.map(t%3D%3Et.priority)%3B%20const%20queues%20%3D%20tickets.map(t%3D%3Et.queue)%3B%20const%20dash%20%3D%20document.createElement('div')%3B%20dash.id%20%3D%20'__tl_dash__'%3B%20dash.style.cssText%20%3D%20'position%3Afixed%3Binset%3A0%3Bz-index%3A2147483647%3Bbackground%3A%230f172a%3Bfont-family%3A-apple-system%2CBlinkMacSystemFont%2C%22Segoe%20UI%22%2Csans-serif%3Bdisplay%3Aflex%3Bflex-direction%3Acolumn%3Boverflow%3Ahidden'%3B%20dash.innerHTML%20%3D%20%60%20%3C!--%20Header%20--%3E%20%3Cdiv%20style%3D%22background%3A%231e293b%3Bborder-bottom%3A1px%20solid%20%23334155%3Bpadding%3A12px%2020px%3Bdisplay%3Aflex%3Balign-items%3Acenter%3Bjustify-content%3Aspace-between%3Bflex-shrink%3A0%22%3E%20%3Cdiv%20style%3D%22display%3Aflex%3Balign-items%3Acenter%3Bgap%3A10px%22%3E%20%3Cdiv%20style%3D%22width%3A8px%3Bheight%3A8px%3Bborder-radius%3A50%25%3Bbackground%3A%2310b981%3Bbox-shadow%3A0%200%206px%20%2310b981%3Banimation%3A__tl_pulse%202s%20infinite%22%3E%3C%2Fdiv%3E%20%3Cspan%20style%3D%22color%3A%23f1f5f9%3Bfont-size%3A16px%3Bfont-weight%3A700%22%3ETrueLog%20Ticket%20Dashboard%3C%2Fspan%3E%20%3Cspan%20id%3D%22__tl_count__%22%20style%3D%22background%3A%23334155%3Bcolor%3A%2394a3b8%3Bpadding%3A2px%2010px%3Bborder-radius%3A99px%3Bfont-size%3A12px%3Bfont-weight%3A600%22%3E%24%7Btickets.length.toLocaleString()%7D%20tickets%3C%2Fspan%3E%20%3C%2Fdiv%3E%20%3Cdiv%20style%3D%22display%3Aflex%3Balign-items%3Acenter%3Bgap%3A8px%22%3E%20%3Cspan%20style%3D%22color%3A%23475569%3Bfont-size%3A11px%22%3EClick%20again%20to%20close%20%C2%B7%20Click%20any%20row%20to%20open%20ticket%3C%2Fspan%3E%20%3Cbutton%20onclick%3D%22document.getElementById('__tl_dash__').remove()%22%20style%3D%22background%3A%23334155%3Bcolor%3A%2394a3b8%3Bborder%3Anone%3Bborder-radius%3A6px%3Bpadding%3A5px%2012px%3Bcursor%3Apointer%3Bfont-size%3A13px%22%3E%E2%9C%95%20Close%3C%2Fbutton%3E%20%3C%2Fdiv%3E%20%3C%2Fdiv%3E%20%3C!--%20Stats%20--%3E%20%3Cdiv%20id%3D%22__tl_stats__%22%20style%3D%22display%3Aflex%3Bgap%3A8px%3Bpadding%3A12px%2020px%3Boverflow-x%3Aauto%3Bflex-shrink%3A0%3Balign-items%3Astretch%22%3E%3C%2Fdiv%3E%20%3C!--%20Filters%20--%3E%20%3Cdiv%20style%3D%22padding%3A10px%2020px%3Bborder-bottom%3A1px%20solid%20%231e293b%3Bdisplay%3Aflex%3Balign-items%3Acenter%3Bgap%3A8px%3Bflex-wrap%3Awrap%3Bflex-shrink%3A0%3Bbackground%3A%230a1628%22%3E%20%3Cinput%20id%3D%22__tl_q__%22%20type%3D%22search%22%20placeholder%3D%22%F0%9F%94%8D%20Search%20tickets%2C%20IDs%2C%20customers%2C%20tracking...%22%20oninput%3D%22__tlFilter()%22%20style%3D%22background%3A%231e293b%3Bborder%3A1px%20solid%20%23334155%3Bcolor%3A%23e2e8f0%3Bpadding%3A7px%2012px%3Bborder-radius%3A6px%3Bfont-size%3A13px%3Boutline%3Anone%3Bflex%3A1%3Bmin-width%3A240px%3Bmax-width%3A400px%22%3E%20%3Cselect%20id%3D%22__tl_cat__%22%20onchange%3D%22__tlFilter()%22%20style%3D%22background%3A%231e293b%3Bborder%3A1px%20solid%20%23334155%3Bcolor%3A%23e2e8f0%3Bpadding%3A7px%2010px%3Bborder-radius%3A6px%3Bfont-size%3A12px%3Boutline%3Anone%3Bcursor%3Apointer%22%3E%20%24%7Bopts(categories%2C'All%20Categories')%7D%20%3C%2Fselect%3E%20%3Cselect%20id%3D%22__tl_st__%22%20onchange%3D%22__tlFilter()%22%20style%3D%22background%3A%231e293b%3Bborder%3A1px%20solid%20%23334155%3Bcolor%3A%23e2e8f0%3Bpadding%3A7px%2010px%3Bborder-radius%3A6px%3Bfont-size%3A12px%3Boutline%3Anone%3Bcursor%3Apointer%22%3E%20%24%7Bopts(statuses%2C'All%20Statuses')%7D%20%3C%2Fselect%3E%20%3Cselect%20id%3D%22__tl_prio__%22%20onchange%3D%22__tlFilter()%22%20style%3D%22background%3A%231e293b%3Bborder%3A1px%20solid%20%23334155%3Bcolor%3A%23e2e8f0%3Bpadding%3A7px%2010px%3Bborder-radius%3A6px%3Bfont-size%3A12px%3Boutline%3Anone%3Bcursor%3Apointer%22%3E%20%24%7Bopts(priorities%2C'All%20Priorities')%7D%20%3C%2Fselect%3E%20%3Cselect%20id%3D%22__tl_queue__%22%20onchange%3D%22__tlFilter()%22%20style%3D%22background%3A%231e293b%3Bborder%3A1px%20solid%20%23334155%3Bcolor%3A%23e2e8f0%3Bpadding%3A7px%2010px%3Bborder-radius%3A6px%3Bfont-size%3A12px%3Boutline%3Anone%3Bcursor%3Apointer%22%3E%20%24%7Bopts(queues%2C'All%20Queues')%7D%20%3C%2Fselect%3E%20%3Cbutton%20onclick%3D%22__tlReset()%22%20style%3D%22background%3A%23334155%3Bcolor%3A%2394a3b8%3Bborder%3Anone%3Bborder-radius%3A6px%3Bpadding%3A7px%2012px%3Bcursor%3Apointer%3Bfont-size%3A12px%22%3E%E2%9C%95%20Reset%3C%2Fbutton%3E%20%3Cspan%20id%3D%22__tl_res__%22%20style%3D%22color%3A%23475569%3Bfont-size%3A12px%3Bmargin-left%3Aauto%22%3E%3C%2Fspan%3E%20%3C%2Fdiv%3E%20%3C!--%20Table%20--%3E%20%3Cdiv%20style%3D%22flex%3A1%3Boverflow%3Aauto%22%3E%20%3Ctable%20style%3D%22width%3A100%25%3Bborder-collapse%3Acollapse%3Bmin-width%3A900px%22%3E%20%3Cthead%3E%20%3Ctr%20style%3D%22position%3Asticky%3Btop%3A0%3Bbackground%3A%230f172a%3Bz-index%3A10%22%3E%20%24%7B%5B%5B'id'%2C'Ticket'%5D%2C%5B'subject'%2C'Subject'%5D%2C%5B'category'%2C'Category'%5D%2C%5B'status'%2C'Status'%5D%2C%5B'priority'%2C'Priority'%5D%2C%5B'queue'%2C'Queue'%5D%2C%5B'assignee'%2C'Assignee'%5D%2C%5B'sla'%2C'SLA'%5D%2C%5B'created'%2C'Created'%5D%5D.map((%5Bcol%2Clabel%5D)%3D%3E%20%60%3Cth%20class%3D%22__tl_th__%22%20data-col%3D%22%24%7Bcol%7D%22%20onclick%3D%22__tlSort('%24%7Bcol%7D')%22%20style%3D%22padding%3A8px%2010px%3Btext-align%3Aleft%3Bcolor%3A%24%7Bcol%3D%3D%3DsortCol%3F'%233b82f6'%3A'%2364748b'%7D%3Bfont-size%3A10px%3Btext-transform%3Auppercase%3Bletter-spacing%3A.06em%3Bfont-weight%3A600%3Bwhite-space%3Anowrap%3Bborder-bottom%3A1px%20solid%20%231e293b%3Bcursor%3Apointer%3Buser-select%3Anone%22%3E%20%24%7Blabel%7D%20%3Cspan%20class%3D%22__tl_arrow__%22%3E%24%7Bcol%3D%3D%3DsortCol%3F(sortDir%3D%3D%3D1%3F'%E2%86%91'%3A'%E2%86%93')%3A'%E2%86%95'%7D%3C%2Fspan%3E%20%3C%2Fth%3E%60).join('')%7D%20%3C%2Ftr%3E%20%3C%2Fthead%3E%20%3Ctbody%20id%3D%22__tl_tbody__%22%3E%3C%2Ftbody%3E%20%3C%2Ftable%3E%20%3C%2Fdiv%3E%20%3C!--%20Pagination%20--%3E%20%3Cdiv%20id%3D%22__tl_pages__%22%20style%3D%22border-top%3A1px%20solid%20%231e293b%3Bflex-shrink%3A0%3Bbackground%3A%230a1628%22%3E%3C%2Fdiv%3E%20%3Cstyle%3E%20%40keyframes%20__tl_pulse%20%7B%200%25%2C100%25%7Bopacity%3A1%7D%2050%25%7Bopacity%3A.3%7D%20%7D%20%23__tl_dash__%20%3A%3A-webkit-scrollbar%7Bwidth%3A5px%3Bheight%3A5px%7D%20%23__tl_dash__%20%3A%3A-webkit-scrollbar-track%7Bbackground%3A%231e293b%7D%20%23__tl_dash__%20%3A%3A-webkit-scrollbar-thumb%7Bbackground%3A%23334155%3Bborder-radius%3A3px%7D%20%3C%2Fstyle%3E%60%3B%20document.body.appendChild(dash)%3B%20window.__tlFilter%20%3D%20applyFilters%3B%20window.__tlSort%20%3D%20sortBy%3B%20window.__tlGoPage%20%3D%20goToPage%3B%20window.__tlReset%20%3D%20function()%20%7B%20%5B'__tl_q__'%2C'__tl_cat__'%2C'__tl_st__'%2C'__tl_prio__'%2C'__tl_queue__'%5D.forEach(id%20%3D%3E%20%7B%20const%20el%20%3D%20document.getElementById(id)%3B%20if(el)%20el.value%3D''%3B%20%7D)%3B%20applyFilters()%3B%20%7D%3B%20applyFilters()%3B%20%7D)()%3B" onclick="alert('Drag me to your bookmarks bar instead of clicking!'); return false;">🎫 TrueLog Tickets</a>
+      </div>
+      <div class="tip"><strong>Can't drag?</strong> Right-click the button above, choose "Bookmark this link", and save it to your Bookmarks Bar folder.</div>
+    </div>
   </div>
-  <div class="header-right">
-    <span class="meta" id="lastUpdated">Loaded Apr 14, 2026</span>
-    <a href="https://inventory.truelog.com.sg/tickets/sf" target="_blank" class="btn btn-ghost">Open TrueLog ↗</a>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-body">
+      <h3>Go to the TrueLog tickets page</h3>
+      <p>Navigate to <strong>inventory.truelog.com.sg/tickets/sf</strong> and make sure you're logged in. The bookmarklet only works from that page — it reads the ticket data the page already loads into memory.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-body">
+      <h3>Click the bookmark</h3>
+      <p>Click <strong>🎫 TrueLog Tickets</strong> in your bookmarks bar. The dashboard opens instantly over the page. Click the bookmark again (or the <strong>✕ Close</strong> button) to dismiss it.</p>
+    </div>
+  </div>
+
+  <hr>
+
+  <div class="features">
+    <div class="feat"><strong>All 2,834+ tickets</strong>Reads everything already loaded in the page</div>
+    <div class="feat"><strong>Full-text search</strong>Filter by subject, ID, customer, tracking #</div>
+    <div class="feat"><strong>5 filter dropdowns</strong>Category, Status, Priority, Queue, Assignee</div>
+    <div class="feat"><strong>Sortable columns</strong>Click any header to sort asc/desc</div>
+    <div class="feat"><strong>Paginated (50/page)</strong>Navigate with prev/next buttons</div>
+    <div class="feat"><strong>Live stat cards</strong>Counts update as you filter</div>
+    <div class="feat"><strong>Click rows to open</strong>Opens the ticket in a new tab</div>
+    <div class="feat"><strong>Toggle on/off</strong>Click the bookmark again to close</div>
+  </div>
+
+  <div class="refresh-tip">
+    <strong>To get fresh data:</strong> Refresh the TrueLog page (<code>F5</code>), then click the bookmarklet again. The page re-fetches all tickets on every load — the bookmarklet just reads whatever is already there.
   </div>
 </div>
-
-<div class="stats" id="statsRow"></div>
-
-<div class="toolbar">
-  <div class="search-wrap">
-    <span class="search-icon">🔍</span>
-    <input class="search-input" id="searchInput" type="search" placeholder="Search tickets…" oninput="applyFilters()" />
-  </div>
-  <select class="filter-sel" id="catFilter" onchange="applyFilters()">
-    <option value="">All Categories</option>
-    <option>Asset Intake</option>
-    <option>Asset Checkout</option>
-    <option>Asset Return</option>
-    <option>Correction</option>
-    <option>General</option>
-  </select>
-  <select class="filter-sel" id="statusFilter" onchange="applyFilters()">
-    <option value="">All Statuses</option>
-  </select>
-  <span class="results" id="resultsLabel"></span>
-</div>
-
-<div class="table-wrap">
-  <table>
-    <thead>
-      <tr>
-        <th onclick="sortBy('id')"        data-col="id">       Ticket <span class="sort-icon">↕</span></th>
-        <th onclick="sortBy('subject')"   data-col="subject">  Subject <span class="sort-icon">↕</span></th>
-        <th onclick="sortBy('category')"  data-col="category"> Category <span class="sort-icon">↕</span></th>
-        <th onclick="sortBy('outStatus')" data-col="outStatus">Outbound Status <span class="sort-icon">↕</span></th>
-        <th onclick="sortBy('outDate')"   data-col="outDate">  Outbound Date <span class="sort-icon">↕</span></th>
-        <th onclick="sortBy('inStatus')"  data-col="inStatus"> Inbound Status <span class="sort-icon">↕</span></th>
-        <th onclick="sortBy('received')"  data-col="received"> Received <span class="sort-icon">↕</span></th>
-      </tr>
-    </thead>
-    <tbody id="tbody"></tbody>
-  </table>
-  <div class="empty" id="empty"><div class="empty-icon">🎫</div><p>No tickets match your search.</p></div>
-</div>
-
-<script>
-const BASE = 'https://inventory.truelog.com.sg';
-
-// ── Embedded ticket data (snapshot: Apr 14, 2026) ──
-const TICKETS = [
-  {id:"3666",subject:"Asset Checkout - Nava Gotlib (SentinelOne)",         category:"Asset Checkout",outDate:"Apr 13, '26",outStatus:"Pending",                                                                      inStatus:"Pending",                                                                        received:"-"},
-  {id:"3396",subject:"Asset Checkout - Ariel Zilbershteyin (SentinelOne)", category:"Asset Checkout",outDate:"Apr 6, '26", outStatus:"At HFD Warehouse",                                                             inStatus:"Pending",                                                                        received:"-"},
-  {id:"3366",subject:"Asset Checkout - SentinelOne IL (SentinelOne)",      category:"Asset Checkout",outDate:"Mar 31, '26",outStatus:"Pending - Tracking Number Not Found",                                          inStatus:"Pending",                                                                        received:"Apr 11, '26"},
-  {id:"3357",subject:"Asset Checkout - Ofer Rant (SentinelOne)",           category:"Asset Checkout",outDate:"Mar 28, '26",outStatus:"Delivered",                                                                    inStatus:"Pending",                                                                        received:"Apr 13, '26"},
-  {id:"3160",subject:"Asset Checkout - Metav Sharoni (SentinelOne)",       category:"Asset Checkout",outDate:"Mar 20, '26",outStatus:"Delivered",                                                                    inStatus:"Pending",                                                                        received:"Mar 24, '26"},
-  {id:"3104",subject:"Asset Checkout - 10 assets - Liel Rubin (SHURU) SELF COLLECTION",category:"Asset Checkout",outDate:"Mar 18, '26",outStatus:"Pending",                                                         inStatus:"Pending",                                                                        received:"Apr 13, '26"},
-  {id:"2997",subject:"Asset Return - Liav Lavi (SENTINELONE)",             category:"Asset Return",  outDate:"Mar 9, '26", outStatus:"Delivered",                                                                    inStatus:"Item was received on 2026-03-18 16:24:11 (GMT+8)",                               received:"-"},
-  {id:"2955",subject:"Asset Return - Yariv Levi (SENTINELONE)",            category:"Asset Return",  outDate:"Mar 4, '26", outStatus:"Delivered",                                                                    inStatus:"Item was received on 2026-03-18 00:53:46 (GMT+8)",                               received:"-"},
-  {id:"2940",subject:"Israel new laptops correction",                      category:"Correction",    outDate:"Mar 2, '26", outStatus:"Pending",                                                                      inStatus:"Pending",                                                                        received:"Apr 12, '26"},
-  {id:"2880",subject:"Asset Return - Bar Shofer",                          category:"Asset Return",  outDate:"Feb 26, '26",outStatus:"Pending",                                                                      inStatus:"Pending",                                                                        received:"-"},
-  {id:"3689",subject:"Asset Intake - April 14, 2026 - 100013123 Postman",  category:"Asset Intake",  outDate:"Apr 14, '26",outStatus:"Pending",                                                                      inStatus:"Pending",                                                                        received:"Apr 14, '26"},
-  {id:"3679",subject:"Asset Checkout - Amirah Rahman (Wise)",              category:"Asset Checkout",outDate:"Apr 14, '26",outStatus:"Label Generated",                                                              inStatus:"Pending",                                                                        received:"-"},
-  {id:"3675",subject:"Asset Return - Nada Azura (CLOUDFLARE)",             category:"Asset Return",  outDate:"Apr 14, '26",outStatus:"SingPost has received your order information, but not your item yet",          inStatus:"SingPost has received your order information, but not your item yet",             received:"-"},
-  {id:"3674",subject:"Asset Checkout - Yao Jie Lim (Abnormal.AI)",         category:"Asset Checkout",outDate:"Apr 14, '26",outStatus:"Pending",                                                                      inStatus:"Pending",                                                                        received:"-"},
-  {id:"3667",subject:"Asset Intake - April 13, 2026 - 100013123 Postman",  category:"Asset Intake",  outDate:"Apr 13, '26",outStatus:"Pending",                                                                      inStatus:"Pending",                                                                        received:"Apr 13, '26"},
-  {id:"3665",subject:"Asset Intake - 100013189 TANIUM April 13, 2026",     category:"Asset Intake",  outDate:"Apr 13, '26",outStatus:"Pending",                                                                      inStatus:"Pending",                                                                        received:"Apr 13, '26"},
-  {id:"3664",subject:"Asset Intake - April 13, 2026 - 100012968 Tanium",   category:"Asset Intake",  outDate:"Apr 13, '26",outStatus:"Pending",                                                                      inStatus:"Pending",                                                                        received:"Apr 13, '26"},
-  {id:"3661",subject:"Asset Return - Teddy Looi (CLOUDFLARE) - YubiKey 5C Nano FIPS",category:"Asset Return",outDate:"Apr 13, '26",outStatus:"Pending",                                                             inStatus:"Pending",                                                                        received:"-"},
-  {id:"3660",subject:"Asset Return - Teddy Looi (CLOUDFLARE) - YubiKey 5C NFC FIPS", category:"Asset Return",outDate:"Apr 13, '26",outStatus:"Pending",                                                             inStatus:"Pending",                                                                        received:"-"},
-  {id:"3655",subject:"Asset Return - Teddy Looi (CLOUDFLARE)",             category:"Asset Return",  outDate:"Apr 13, '26",outStatus:"SingPost has received your order information, but not your item yet",          inStatus:"Pending",                                                                        received:"-"},
-  {id:"3686",subject:"Asset Checkout - Hrushikesh Chidley (SentinelOne)",  category:"Asset Checkout",outDate:"Apr 14, '26",outStatus:"In Transit",                                                                   inStatus:"Pending",                                                                        received:"-"},
-  {id:"3685",subject:"Asset Checkout - Kumaran Kanagaraj (Digital.ai)",    category:"Asset Checkout",outDate:"Apr 14, '26",outStatus:"In Transit",                                                                   inStatus:"Pending",                                                                        received:"-"},
-  {id:"3684",subject:"Asset Checkout - Asim Javid (AppDirect)",            category:"Asset Checkout",outDate:"Apr 14, '26",outStatus:"Pending",                                                                      inStatus:"Pending",                                                                        received:"-"},
-  {id:"3683",subject:"Asset Checkout - Km Ganesh (Wise)",                  category:"Asset Checkout",outDate:"Apr 14, '26",outStatus:"Pending",                                                                      inStatus:"Pending",                                                                        received:"-"},
-  {id:"3682",subject:"Asset Checkout - Charu Singh (Wise)",                category:"Asset Checkout",outDate:"Apr 14, '26",outStatus:"Delivered",                                                                    inStatus:"Pending",                                                                        received:"Apr 14, '26"},
-  {id:"3681",subject:"Asset Checkout - Yash Airon (SentinelOne)",          category:"Asset Checkout",outDate:"Apr 14, '26",outStatus:"Pending",                                                                      inStatus:"Pending",                                                                        received:"-"},
-  {id:"3680",subject:"Asset Checkout - Yash Airon (SentinelOne)",          category:"Asset Checkout",outDate:"Apr 14, '26",outStatus:"Pending",                                                                      inStatus:"Pending",                                                                        received:"-"},
-  {id:"3673",subject:"Asset Checkout - Fatima Sultana (Wise)",             category:"Asset Checkout",outDate:"Apr 13, '26",outStatus:"In Transit",                                                                   inStatus:"Pending",                                                                        received:"-"},
-  {id:"3672",subject:"Asset Checkout - Tejaswini G (UiPath)",              category:"Asset Checkout",outDate:"Apr 13, '26",outStatus:"In Transit",                                                                   inStatus:"Pending",                                                                        received:"-"},
-  {id:"3671",subject:"Asset Return - Gourav Mittal (SENTINELONE) - Apple Computer",category:"Asset Return",outDate:"Apr 13, '26",outStatus:"Pending",                                                               inStatus:"Pending",                                                                        received:"-"},
-  {id:"2478",subject:"Asset Return - Lemar Martin (NYLAS)",                category:"Asset Return",  outDate:"Jan 25, '26",outStatus:"Delivered",                                                                    inStatus:"Pending",                                                                        received:"-"},
-  {id:"2477",subject:"Asset Return - Jad Karami (HACKERONE)",              category:"Asset Return",  outDate:"Jan 25, '26",outStatus:"Delivered",                                                                    inStatus:"Pending",                                                                        received:"-"},
-  {id:"2476",subject:"Asset Return - Meghan MacDonald (SPROUT SOCIAL)",    category:"Asset Return",  outDate:"Jan 25, '26",outStatus:"Delivered",                                                                    inStatus:"Pending",                                                                        received:"-"},
-  {id:"2475",subject:"Asset Checkout - A3113 (KTK4X75W6K) - KTK4X75W6K",  category:"Asset Checkout",outDate:"Jan 25, '26",outStatus:"Delivered",                                                                    inStatus:"Pending",                                                                        received:"Feb 13, '26"},
-  {id:"2474",subject:"Asset Checkout - S23RF (R5CT70MSP3K) - R5CT70MSP3K",category:"Asset Checkout",outDate:"Jan 25, '26",outStatus:"Delivered",                                                                    inStatus:"Pending",                                                                        received:"Feb 13, '26"},
-  {id:"2473",subject:"Asset Checkout - DTK246K0A (PO07-000003) - 5DV21N1001585",category:"Asset Checkout",outDate:"Jan 25, '26",outStatus:"Delivered",                                                              inStatus:"Pending",                                                                        received:"Feb 13, '26"},
-  {id:"2472",subject:"Asset Return - Osman Haybe (SPROUT SOCIAL)",         category:"Asset Return",  outDate:"Jan 25, '26",outStatus:"Delivered",                                                                    inStatus:"Pending",                                                                        received:"-"},
-  {id:"2471",subject:"Asset Return - Britt McVittie (SPROUT SOCIAL)",      category:"Asset Return",  outDate:"Jan 25, '26",outStatus:"Delivered",                                                                    inStatus:"Pending",                                                                        received:"-"},
-  {id:"2470",subject:"Asset Return - Jennifer Gill (COVER GENIUS)",        category:"Asset Return",  outDate:"Jan 25, '26",outStatus:"Delivered",                                                                    inStatus:"Pending",                                                                        received:"-"},
-  {id:"2469",subject:"Asset Checkout - A2485 (C4H917GN2J) - C4H917GN2J",  category:"Asset Checkout",outDate:"Jan 25, '26",outStatus:"Delivered",                                                                    inStatus:"Pending",                                                                        received:"Feb 13, '26"},
-];
-
-// ── Status colours ──
-const COLORS = {
-  delivered:"#06b6d4", pending:"#f97316", "in transit":"#f59e0b",
-  "label generated":"#6366f1", "at hfd":"#8b5cf6", singpost:"#3b82f6",
-  received:"#10b981", resolved:"#10b981", cancelled:"#ef4444",
-  "in progress":"#f59e0b", new:"#3b82f6",
-};
-function sc(s=""){const l=s.toLowerCase();for(const[k,v]of Object.entries(COLORS))if(l.includes(k))return v;return"#6b7280";}
-function pill(t){if(!t||t==="-")return`<span style="color:var(--muted)">—</span>`;const c=sc(t);return`<span class="pill" style="background:${c}22;color:${c}" title="${t}">${t}</span>`;}
-
-// ── Sort state ──
-let sortCol="id", sortDir=-1, activeStat=null;
-
-// ── Build status filter dropdown ──
-function buildStatusFilter(){
-  const statuses=[...new Set(TICKETS.map(t=>t.outStatus).filter(s=>s&&s!=="-"))].sort();
-  const sel=document.getElementById("statusFilter");
-  sel.innerHTML=`<option value="">All Statuses</option>`+statuses.map(s=>`<option>${s}</option>`).join("");
-}
-
-// ── Stats ──
-const CAT_COLORS={"Asset Intake":"#10b981","Asset Checkout":"#3b82f6","Asset Return":"#f59e0b","Correction":"#8b5cf6","General":"#6b7280"};
-function renderStats(){
-  const byOut={};
-  TICKETS.forEach(t=>{byOut[t.outStatus]=(byOut[t.outStatus]||0)+1;});
-  const sorted=Object.entries(byOut).sort((a,b)=>b[1]-a[1]).slice(0,6);
-  const total=`<div class="stat${activeStat===null?' active':''}" style="border-left-color:var(--blue)" onclick="filterByStat(null)"><div class="stat-num">${TICKETS.length}</div><div class="stat-label">Total</div></div>`;
-  const cards=sorted.map(([s,n])=>`<div class="stat${activeStat===s?' active':''}" style="border-left-color:${sc(s)}" onclick="filterByStat('${s.replace(/'/g,"\\'")}')"><div class="stat-num">${n}</div><div class="stat-label">${s}</div></div>`).join("");
-  document.getElementById("statsRow").innerHTML=total+cards;
-}
-
-function filterByStat(val){
-  activeStat=val;
-  const sel=document.getElementById("statusFilter");
-  sel.value=val||"";
-  renderStats();
-  applyFilters();
-}
-
-// ── Render table ──
-function renderTable(){
-  const data=[...TICKETS].sort((a,b)=>{
-    let av=a[sortCol]??"",bv=b[sortCol]??"";
-    if(sortCol==="id"){av=parseInt(a.id);bv=parseInt(b.id);}
-    else{av=av.toLowerCase();bv=bv.toLowerCase();}
-    return av<bv?-sortDir:av>bv?sortDir:0;
-  });
-  document.querySelectorAll("thead th").forEach(th=>{
-    th.classList.remove("sorted");
-    const si=th.querySelector(".sort-icon");
-    if(th.dataset.col===sortCol){th.classList.add("sorted");if(si)si.textContent=sortDir===1?"↑":"↓";}
-    else if(si)si.textContent="↕";
-  });
-  document.getElementById("tbody").innerHTML=data.map(t=>`
-    <tr data-id="${t.id}" data-search="${[t.id,t.subject,t.category,t.outStatus,t.inStatus].join(" ").toLowerCase()}"
-        data-status="${t.outStatus}" data-cat="${t.category}"
-        onclick="window.open('${BASE}/tickets/${t.id}','_blank')" title="Open in TrueLog">
-      <td class="td-id">TICK-${t.id}</td>
-      <td class="td-subj" title="${t.subject}">${t.subject}</td>
-      <td><span style="color:${CAT_COLORS[t.category]||'var(--subtle)'};font-size:12px;font-weight:600">${t.category}</span></td>
-      <td>${pill(t.outStatus)}</td>
-      <td class="td-date">${t.outDate!=="-"?t.outDate:"—"}</td>
-      <td>${pill(t.inStatus)}</td>
-      <td class="td-date">${t.received!=="-"?t.received:"—"}</td>
-    </tr>`).join("");
-  applyFilters();
-}
-
-// ── Filters ──
-function applyFilters(){
-  const q=document.getElementById("searchInput").value.toLowerCase();
-  const st=document.getElementById("statusFilter").value;
-  const cat=document.getElementById("catFilter").value;
-  const rows=document.querySelectorAll("#tbody tr");
-  let vis=0;
-  rows.forEach(r=>{
-    const show=(!q||r.dataset.search.includes(q))&&(!st||r.dataset.status===st)&&(!cat||r.dataset.cat===cat);
-    r.classList.toggle("hidden",!show);
-    if(show)vis++;
-  });
-  document.getElementById("resultsLabel").textContent=vis===TICKETS.length?"":`${vis} of ${TICKETS.length} shown`;
-  document.getElementById("empty").style.display=vis===0?"block":"none";
-}
-
-// ── Sort ──
-function sortBy(col){sortDir=sortCol===col?-sortDir:1;sortCol=col;renderTable();}
-
-// ── Init ──
-buildStatusFilter();
-renderStats();
-renderTable();
-</script>
 </body>
 </html>
