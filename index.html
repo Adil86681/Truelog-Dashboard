@@ -1,85 +1,1058 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TrueLog Ticket Dashboard &mdash; Bookmarklet Installer</title>
-  <style>
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    body{background:#0f172a;color:#e2e8f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 20px}
-    .card{background:#1e293b;border:1px solid #334155;border-radius:16px;padding:40px;max-width:620px;width:100%}
-    h1{font-size:22px;font-weight:700;color:#f1f5f9;margin-bottom:8px}
-    .subtitle{color:#64748b;font-size:14px;margin-bottom:32px;line-height:1.55}
-    .step{display:flex;gap:16px;margin-bottom:28px;align-items:flex-start}
-    .step-num{background:#3b82f6;color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;margin-top:1px}
-    .step-body h3{font-size:14px;font-weight:600;color:#f1f5f9;margin-bottom:5px}
-    .step-body p{font-size:13px;color:#94a3b8;line-height:1.55}
-    .step-body strong{color:#e2e8f0}
-    .bm-wrap{background:#0f172a;border:2px dashed #334155;border-radius:12px;padding:24px;text-align:center;margin:12px 0 6px}
-    .bm-wrap p{font-size:12px;color:#64748b;margin-bottom:14px}
-    .bm-link{display:inline-block;background:linear-gradient(135deg,#1d4ed8,#7c3aed);color:#fff;padding:12px 28px;border-radius:10px;font-size:15px;font-weight:700;text-decoration:none;cursor:grab;box-shadow:0 4px 15px rgba(59,130,246,.35)}
-    .bm-link:hover{opacity:.9}
-    .tip{background:#0f172a;border:1px solid #1e3a5f;border-radius:8px;padding:10px 14px;margin-top:6px;font-size:12px;color:#64748b;line-height:1.5}
-    .tip strong{color:#94a3b8}
-    hr{border:none;border-top:1px solid #334155;margin:28px 0}
-    .features{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
-    .feat{background:#0f172a;border-radius:8px;padding:10px 14px;font-size:12px;color:#64748b;border-left:3px solid #334155}
-    .feat strong{display:block;color:#94a3b8;margin-bottom:2px}
-    .badge{display:inline-block;background:#10b98122;color:#10b981;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600;margin-left:8px;vertical-align:middle}
-    .refresh-tip{background:#1e3a5f;border-radius:8px;padding:14px 16px;font-size:12px;color:#7dd3fc;line-height:1.6;margin-top:24px}
-    code{background:#0f172a;padding:2px 6px;border-radius:4px;font-family:monospace;color:#7dd3fc}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inbound Shipment Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #eaf0f6;
+    --surface: #ffffff;
+    --surface2: #f3f6fa;
+    --border: #d4dbe5;
+    --border-focus: #e8546b;
+    --accent: #e8546b;
+    --accent-dim: rgba(232,84,107,0.08);
+    --accent-hover: #d94460;
+    --green: #1e9e5e;
+    --green-dim: rgba(30,158,94,0.1);
+    --amber: #d97706;
+    --amber-dim: rgba(217,119,6,0.1);
+    --red: #d94460;
+    --red-dim: rgba(217,68,96,0.08);
+    --purple: #7c3aed;
+    --purple-dim: rgba(124,58,237,0.08);
+    --text: #1a1d2b;
+    --text-muted: #6b7484;
+    --text-dim: #9ca3af;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow: 0 4px 12px rgba(0,0,0,0.08);
+    --mono: 'DM Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 15px;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 58px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow-sm);
+  }
+  .header-left { display: flex; align-items: center; gap: 12px; }
+  .header-logo {
+    width: 32px; height: 32px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 8px rgba(232,84,107,0.3);
+  }
+  .header-logo svg { width: 17px; height: 17px; }
+  .header-title { font-family: var(--sans); font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
+  .header-divider { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
+  .header-sub { font-size: 13px; color: var(--text-muted); }
+  .status-pill {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--green-dim);
+    border: 1px solid rgba(30,158,94,0.2);
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 12px; font-weight: 500; color: var(--green);
+    font-family: var(--mono);
+  }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* ── Layout ── */
+  .main { max-width: 1440px; margin: 0 auto; padding: 24px 32px; }
+
+  /* ── Tabs ── */
+  .tabs {
+    display: flex; gap: 2px;
+    margin-bottom: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 4px;
+  }
+  .tab {
+    flex: 1;
+    font-size: 14px; font-weight: 600;
+    padding: 10px 20px;
+    border: none; cursor: pointer;
+    transition: all 0.15s;
+    color: var(--text-muted);
+    background: transparent;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    border-radius: 7px;
+    font-family: var(--sans);
+    letter-spacing: 0.02em;
+  }
+  .tab:hover { color: var(--text); background: var(--surface2); }
+  .tab.active { background: var(--accent); color: #fff; }
+  .tab .count {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1px 7px;
+    font-size: 11px; font-family: var(--mono); font-weight: 600; color: var(--text-muted);
+  }
+  .tab.active .count { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.3); color: #fff; }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── Form card ── */
+  .form-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+  .form-card-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--surface2);
+  }
+  .form-card-title { font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; }
+  .shipment-badge {
+    font-family: var(--mono); font-size: 14px; font-weight: 600;
+    color: var(--accent); background: var(--accent-dim);
+    border: 1px solid rgba(232,84,107,0.2); border-radius: 6px; padding: 4px 12px;
+  }
+  .form-body {
+    padding: 20px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group.half { grid-column: span 2; }
+  .form-group.full { grid-column: span 4; }
+
+  label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; }
+  label .optional { font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--text-dim); font-size: 11px; }
+  label .required { color: var(--red); font-weight: 700; margin-left: 2px; }
+
+  input, select, textarea {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 14px;
+    padding: 8px 11px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    outline: none;
+    width: 100%;
+  }
+  textarea { resize: vertical; min-height: 60px; }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px rgba(232,84,107,0.1);
+  }
+  input::placeholder, textarea::placeholder { color: var(--text-dim); }
+  select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7484' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px;
+  }
+
+  /* Serial row — direct input + popup button */
+  .serial-row { display: flex; gap: 6px; align-items: center; }
+  .serial-row input {
+    flex: 1;
+    font-family: var(--mono);
+    font-size: 13px;
+  }
+  .serial-popup-btn {
+    flex-shrink: 0;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--text-muted);
+    font-size: 16px;
+    width: 34px; height: 34px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .serial-popup-btn:hover { background: var(--accent-dim); border-color: rgba(232,84,107,0.3); color: var(--accent); }
+
+  /* Form footer */
+  .form-footer {
+    padding: 14px 20px;
+    border-top: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: flex-end; gap: 8px;
+    background: var(--surface2);
+  }
+  .btn {
+    font-size: 13px; font-weight: 600;
+    padding: 8px 18px; border-radius: 7px; border: none; cursor: pointer;
+    transition: all 0.15s; display: flex; align-items: center; gap: 6px;
+    font-family: var(--mono);
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-hover); box-shadow: 0 3px 10px rgba(232,84,107,0.3); transform: translateY(-1px); }
+  .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
+  .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+  .btn-ghost:hover { background: var(--bg); color: var(--text); }
+
+  /* ── Table card ── */
+  .table-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+  .table-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--surface2);
+  }
+  .table-title { font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; }
+  .refresh-btn {
+    font-size: 12px; font-family: var(--mono); color: var(--text-muted);
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 6px; padding: 5px 11px; cursor: pointer;
+    transition: all 0.15s; display: flex; align-items: center; gap: 5px;
+  }
+  .refresh-btn:hover { color: var(--accent); border-color: rgba(232,84,107,0.3); background: var(--accent-dim); }
+
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    font-size: 11px; font-weight: 700; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.7px;
+    padding: 10px 14px; text-align: left;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2); white-space: nowrap;
+  }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--surface2); }
+  tbody td {
+    padding: 11px 14px; font-size: 14px; color: var(--text);
+    vertical-align: middle; max-width: 160px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .td-shipnum { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--accent); }
+  .td-date { font-family: var(--mono); font-size: 12px; color: var(--text-muted); }
+  .td-mono { font-family: var(--mono); font-size: 12px; color: var(--text-dim); }
+
+  .badge {
+    display: inline-block; font-size: 11px; font-weight: 600;
+    padding: 2px 8px; border-radius: 4px;
+    text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap;
+  }
+  .badge-box    { background: var(--amber-dim);  color: var(--amber);  border: 1px solid rgba(217,119,6,0.2); }
+  .badge-pallet { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(124,58,237,0.2); }
+  .badge-new    { background: var(--green-dim);  color: var(--green);  border: 1px solid rgba(30,158,94,0.2); }
+  .badge-used   { background: var(--red-dim);    color: var(--red);    border: 1px solid rgba(217,68,96,0.15); }
+
+  .action-btn {
+    font-size: 12px; font-weight: 600;
+    padding: 5px 10px; border-radius: 5px; border: none;
+    cursor: pointer; transition: all 0.15s; white-space: nowrap;
+    font-family: var(--mono);
+  }
+  .btn-complete   { background: var(--green-dim); color: var(--green); border: 1px solid rgba(30,158,94,0.2); }
+  .btn-complete:hover   { background: var(--green); color: #fff; }
+  .btn-reactivate { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(217,119,6,0.2); }
+  .btn-reactivate:hover { background: var(--amber); color: #fff; }
+
+  .empty-state { text-align: center; padding: 52px 24px; color: var(--text-dim); }
+  .empty-state svg { opacity: 0.35; margin-bottom: 10px; }
+  .empty-state p { font-size: 14px; color: var(--text-muted); }
+  .loading-row td { text-align: center; padding: 40px; color: var(--text-muted); font-size: 13px; }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(15,20,40,0.35);
+    backdrop-filter: blur(3px);
+    z-index: 200;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.18s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    width: 460px; max-width: 90vw; max-height: 80vh; overflow-y: auto;
+    transform: scale(0.96) translateY(8px);
+    transition: transform 0.2s cubic-bezier(.34,1.56,.64,1);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.12);
+  }
+  .modal-overlay.open .modal { transform: scale(1) translateY(0); }
+  .modal-header {
+    padding: 18px 22px 14px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--surface2); border-radius: 14px 14px 0 0;
+  }
+  .modal-title { font-size: 14px; font-weight: 600; color: var(--text); }
+  .modal-close { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 17px; padding: 2px 6px; border-radius: 4px; transition: all 0.1s; }
+  .modal-close:hover { color: var(--text); background: var(--border); }
+  .modal-body { padding: 18px 22px; display: flex; flex-direction: column; gap: 8px; }
+  .modal-hint { font-size: 13px; color: var(--text-muted); margin-bottom: 4px; }
+  .serial-input-row { display: flex; align-items: center; gap: 10px; }
+  .serial-index { font-family: var(--mono); font-size: 12px; color: var(--text-dim); width: 22px; text-align: right; flex-shrink: 0; }
+  .serial-text-input {
+    flex: 1; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 6px; color: var(--text);
+    font-family: var(--mono); font-size: 13px; padding: 7px 11px;
+    outline: none; transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .serial-text-input:focus { border-color: var(--border-focus); box-shadow: 0 0 0 3px rgba(232,84,107,0.1); }
+  .modal-footer {
+    padding: 14px 22px; border-top: 1px solid var(--border);
+    display: flex; justify-content: flex-end; gap: 8px;
+    background: var(--surface2); border-radius: 0 0 14px 14px;
+  }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 18px;
+    font-size: 13px; font-weight: 500; color: var(--text);
+    z-index: 1000; display: flex; align-items: center; gap: 9px;
+    transform: translateY(70px); opacity: 0;
+    transition: all 0.28s cubic-bezier(.34,1.56,.64,1);
+    box-shadow: var(--shadow); max-width: 320px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .toast.success { border-color: rgba(30,158,94,0.3); }
+  .toast.success .toast-dot { background: var(--green); }
+  .toast.error { border-color: rgba(217,68,96,0.25); }
+  .toast.error .toast-dot { background: var(--red); }
+
+  .spinner { width: 13px; height: 13px; border: 2px solid rgba(232,84,107,0.2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Autocomplete ── */
+  .ac-wrap { position: relative; }
+  .ac-dropdown {
+    position: absolute; top: 100%; left: 0; right: 0;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 7px; margin-top: 4px;
+    max-height: 220px; overflow-y: auto;
+    box-shadow: var(--shadow); z-index: 150;
+    display: none;
+  }
+  .ac-dropdown.open { display: block; }
+  .ac-item {
+    padding: 8px 12px; cursor: pointer;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+  .ac-item:last-child { border-bottom: none; }
+  .ac-item:hover, .ac-item.highlighted { background: var(--surface2); }
+  .ac-item-desc { font-size: 13px; color: var(--text); }
+  .ac-item-mpn { font-size: 11px; color: var(--text-muted); font-family: var(--mono); margin-top: 2px; }
+  .ac-no-results { padding: 10px 12px; font-size: 12px; color: var(--text-dim); }
+  .ac-loading { padding: 10px 12px; font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 8px; }
+  .sku-id-display {
+    font-family: var(--mono); font-size: 11px; color: var(--accent);
+    margin-top: 3px; min-height: 16px;
+  }
+</style>
 </head>
 <body>
-<div class="card">
-  <h1>&#127915; TrueLog Ticket Dashboard <span class="badge">Bookmarklet</span></h1>
-  <p class="subtitle">A one-click live dashboard that overlays all your tickets on TrueLog &mdash; with a built-in detail panel so you can preview any ticket without leaving the dashboard.</p>
 
-  <div class="step">
-    <div class="step-num">1</div>
-    <div class="step-body">
-      <h3>Drag to your bookmarks bar</h3>
-      <p>Drag the button below into your Chrome bookmarks bar. If you don't see it, press <strong>Ctrl+Shift+B</strong> (Windows) or <strong>Cmd+Shift+B</strong> (Mac).</p>
-      <div class="bm-wrap">
-        <p>Drag this into your bookmarks bar</p>
-        <a class="bm-link" href="javascript:(function%20()%20%7B%20const%20existing%20%3D%20document.getElementById('__tl_dash__')%3B%20if%20(existing)%20%7B%20existing.remove()%3B%20return%3B%20%7D%20const%20SC%20%3D%20%7B%20'pending'%3A%20'%23f97316'%2C%20'delivered'%3A%20'%2306b6d4'%2C%20'in%20transit'%3A%20'%23f59e0b'%2C%20'label%20generated'%3A%20'%236366f1'%2C%20'resolved'%3A%20'%2310b981'%2C%20'new'%3A%20'%233b82f6'%2C%20'at%20hfd'%3A%20'%238b5cf6'%2C%20'singpost'%3A%20'%233b82f6'%2C%20'cancelled'%3A%20'%23ef4444'%2C%20'processing'%3A%20'%236366f1'%2C%20'on%20hold'%3A%20'%238b5cf6'%2C%20'in%20progress'%3A%20'%23f59e0b'%2C%20'out%20for%20delivery'%3A%20'%2306b6d4'%2C%20'pending%20pickup'%3A%20'%23f59e0b'%2C%20%7D%3B%20function%20sColor(s)%20%7B%20const%20l%20%3D%20(s%20%7C%7C%20'').toLowerCase()%3B%20for%20(const%20%5Bk%2C%20v%5D%20of%20Object.entries(SC))%20if%20(l.includes(k))%20return%20v%3B%20return%20'%236b7280'%3B%20%7D%20function%20pill(t)%20%7B%20if%20(!t%20%7C%7C%20t%20%3D%3D%3D%20'-'%20%7C%7C%20t%20%3D%3D%3D%20'null'%20%7C%7C%20t%20%3D%3D%3D%20null)%20return%20'%3Cspan%20style%3D%22color%3A%23475569%3Bfont-size%3A11px%22%3E%E2%80%94%3C%2Fspan%3E'%3B%20const%20c%20%3D%20sColor(t)%3B%20return%20%60%3Cspan%20style%3D%22display%3Ainline-block%3Bpadding%3A2px%208px%3Bborder-radius%3A99px%3Bfont-size%3A11px%3Bfont-weight%3A600%3Bbackground%3A%24%7Bc%7D22%3Bcolor%3A%24%7Bc%7D%3Bwhite-space%3Anowrap%3Bmax-width%3A200px%3Boverflow%3Ahidden%3Btext-overflow%3Aellipsis%22%20title%3D%22%24%7Bt%7D%22%3E%24%7Bt%7D%3C%2Fspan%3E%60%3B%20%7D%20const%20PRIO_C%20%3D%20%7B%20High%3A%20'%23ef4444'%2C%20Medium%3A%20'%23f59e0b'%2C%20Low%3A%20'%2310b981'%20%7D%3B%20function%20prioPill(p)%20%7B%20const%20c%20%3D%20PRIO_C%5Bp%5D%20%7C%7C%20'%236b7280'%3B%20return%20%60%3Cspan%20style%3D%22display%3Ainline-block%3Bpadding%3A2px%208px%3Bborder-radius%3A99px%3Bfont-size%3A11px%3Bfont-weight%3A600%3Bbackground%3A%24%7Bc%7D22%3Bcolor%3A%24%7Bc%7D%22%3E%24%7Bp%20%7C%7C%20'%E2%80%94'%7D%3C%2Fspan%3E%60%3B%20%7D%20const%20CAT_C%20%3D%20%7B%20'Asset%20Intake'%3A%20'%2310b981'%2C%20'Asset%20Checkout'%3A%20'%233b82f6'%2C%20'Asset%20Return'%3A%20'%23f59e0b'%2C%20'Correction'%3A%20'%238b5cf6'%20%7D%3B%20function%20catColor(c)%20%7B%20return%20CAT_C%5Bc%5D%20%7C%7C%20'%2394a3b8'%3B%20%7D%20function%20fmtDate(s)%20%7B%20if%20(!s)%20return%20'%E2%80%94'%3B%20try%20%7B%20return%20new%20Date(s).toLocaleString('en-SG'%2C%20%7B%20day%3A%20'numeric'%2C%20month%3A%20'short'%2C%20year%3A%20'numeric'%2C%20hour%3A%20'2-digit'%2C%20minute%3A%20'2-digit'%20%7D)%3B%20%7D%20catch%20%7B%20return%20s%3B%20%7D%20%7D%20function%20fmtShortDate(s)%20%7B%20if%20(!s)%20return%20'%E2%80%94'%3B%20try%20%7B%20return%20new%20Date(s).toLocaleDateString('en-SG'%2C%20%7B%20day%3A%20'numeric'%2C%20month%3A%20'short'%2C%20year%3A%20'numeric'%20%7D)%3B%20%7D%20catch%20%7B%20return%20s%3B%20%7D%20%7D%20let%20filtered%20%3D%20%5B%5D%2C%20sortCol%20%3D%20'id'%2C%20sortDir%20%3D%20-1%2C%20page%20%3D%201%2C%20selectedId%20%3D%20null%3B%20const%20PER_PAGE%20%3D%2050%3B%20const%20raw%20%3D%20()%20%3D%3E%20typeof%20allTickets%20!%3D%3D%20'undefined'%20%3F%20allTickets%20%3A%20%5B%5D%3B%20function%20openDetail(id)%20%7B%20selectedId%20%3D%20id%3B%20const%20t%20%3D%20raw().find(x%20%3D%3E%20x.id%20%3D%3D%20id)%3B%20if%20(!t)%20return%3B%20document.querySelectorAll('.__tl_row__').forEach(r%20%3D%3E%20r.style.background%20%3D%20'transparent')%3B%20const%20row%20%3D%20document.querySelector(%60.__tl_row__%5Bdata-id%3D%22%24%7Bid%7D%22%5D%60)%3B%20if%20(row)%20row.style.background%20%3D%20'%231e3a5f'%3B%20const%20panel%20%3D%20document.getElementById('__tl_panel__')%3B%20const%20slaColor%20%3D%20t.sla_days_remaining%20%3D%3D%3D%20null%20%3F%20'%23475569'%20%3A%20t.sla_days_remaining%20%3C%3D%200%20%3F%20'%23ef4444'%20%3A%20t.sla_days_remaining%20%3C%3D%202%20%3F%20'%23f97316'%20%3A%20'%2310b981'%3B%20panel.innerHTML%20%3D%20%60%20%3C!--%20Panel%20Header%20--%3E%20%3Cdiv%20style%3D%22padding%3A16px%2020px%3Bborder-bottom%3A1px%20solid%20%23334155%3Bdisplay%3Aflex%3Balign-items%3Aflex-start%3Bjustify-content%3Aspace-between%3Bgap%3A10px%3Bflex-shrink%3A0%22%3E%20%3Cdiv%3E%20%3Cdiv%20style%3D%22color%3A%2364748b%3Bfont-size%3A11px%3Bmargin-bottom%3A4px%22%3ETICK-%24%7Bt.id%7D%3C%2Fdiv%3E%20%3Cdiv%20style%3D%22color%3A%23f1f5f9%3Bfont-size%3A14px%3Bfont-weight%3A600%3Bline-height%3A1.4%22%3E%24%7Bt.subject%20%7C%7C%20''%7D%3C%2Fdiv%3E%20%3C%2Fdiv%3E%20%3Cbutton%20onclick%3D%22__tlClosePanel()%22%20style%3D%22background%3A%23334155%3Bborder%3Anone%3Bcolor%3A%2394a3b8%3Bborder-radius%3A6px%3Bpadding%3A5px%2010px%3Bcursor%3Apointer%3Bfont-size%3A13px%3Bflex-shrink%3A0%22%3E%E2%9C%95%3C%2Fbutton%3E%20%3C%2Fdiv%3E%20%3C!--%20Open%20button%20--%3E%20%3Cdiv%20style%3D%22padding%3A12px%2020px%3Bborder-bottom%3A1px%20solid%20%231e293b%3Bflex-shrink%3A0%22%3E%20%3Ca%20href%3D%22%2Ftickets%2F%24%7Bt.id%7D%22%20target%3D%22_blank%22%20style%3D%22display%3Ablock%3Btext-align%3Acenter%3Bbackground%3A%233b82f6%3Bcolor%3A%23fff%3Bpadding%3A9px%3Bborder-radius%3A8px%3Bfont-size%3A13px%3Bfont-weight%3A600%3Btext-decoration%3Anone%22%3E%20Open%20Full%20Ticket%20%E2%86%97%20%3C%2Fa%3E%20%3C%2Fdiv%3E%20%3C!--%20Panel%20Body%20--%3E%20%3Cdiv%20style%3D%22flex%3A1%3Boverflow-y%3Aauto%3Bpadding%3A16px%2020px%22%3E%20%3C!--%20Status%20row%20--%3E%20%3Cdiv%20style%3D%22display%3Aflex%3Bgap%3A8px%3Bflex-wrap%3Awrap%3Bmargin-bottom%3A20px%22%3E%20%24%7Bpill(t.status)%7D%20%24%7BprioPill(t.priority)%7D%20%3Cspan%20style%3D%22color%3A%24%7BcatColor(t.category)%7D%3Bfont-size%3A11px%3Bfont-weight%3A600%3Bpadding%3A2px%208px%3Bborder-radius%3A99px%3Bbackground%3A%24%7BcatColor(t.category)%7D22%22%3E%24%7Bt.category%20%7C%7C%20'%E2%80%94'%7D%3C%2Fspan%3E%20%24%7Bt.sla_days_remaining%20!%3D%3D%20null%20%3F%20%60%3Cspan%20style%3D%22color%3A%24%7BslaColor%7D%3Bfont-size%3A11px%3Bfont-weight%3A600%3Bpadding%3A2px%208px%3Bborder-radius%3A99px%3Bbackground%3A%24%7BslaColor%7D22%22%3ESLA%3A%20%24%7Bt.sla_days_remaining%7Dd%3C%2Fspan%3E%60%20%3A%20''%7D%20%3C%2Fdiv%3E%20%3C!--%20Fields%20--%3E%20%24%7Bfield('Queue'%2C%20t.queue)%7D%20%24%7Bfield('Assignee'%2C%20t.assignee)%7D%20%24%7Bfield('Customer'%2C%20t.customer_name)%7D%20%24%7Bfield('Created'%2C%20fmtDate(t.created_at))%7D%20%24%7Bfield('Updated'%2C%20fmtDate(t.updated_at))%7D%20%24%7Bt.sla_due_date%20%3F%20field('SLA%20Due'%2C%20fmtShortDate(t.sla_due_date))%20%3A%20''%7D%20%3C!--%20Outbound%20--%3E%20%3Cdiv%20style%3D%22margin%3A16px%200%208px%3Bcolor%3A%2364748b%3Bfont-size%3A10px%3Btext-transform%3Auppercase%3Bletter-spacing%3A.08em%3Bfont-weight%3A600%22%3EOutbound%20(Shipping)%3C%2Fdiv%3E%20%24%7Bfield('Status'%2C%20t.shipping_status%2C%20true)%7D%20%24%7Bfield('Carrier'%2C%20t.shipping_carrier)%7D%20%24%7Bt.shipping_tracking%20%3F%20trackingField('Tracking'%2C%20t.shipping_tracking%2C%20t.shipping_carrier)%20%3A%20field('Tracking'%2C%20null)%7D%20%24%7Bt.shipping_tracking_created_at%20%3F%20field('Label%20Created'%2C%20fmtShortDate(t.shipping_tracking_created_at))%20%3A%20''%7D%20%3C!--%20Inbound%20--%3E%20%3Cdiv%20style%3D%22margin%3A16px%200%208px%3Bcolor%3A%2364748b%3Bfont-size%3A10px%3Btext-transform%3Auppercase%3Bletter-spacing%3A.08em%3Bfont-weight%3A600%22%3EInbound%20(Return)%3C%2Fdiv%3E%20%24%7Bfield('Status'%2C%20t.return_status%2C%20true)%7D%20%24%7Bfield('Carrier'%2C%20t.return_carrier)%7D%20%24%7Bt.return_tracking%20%3F%20trackingField('Tracking'%2C%20t.return_tracking%2C%20t.return_carrier)%20%3A%20field('Tracking'%2C%20null)%7D%20%3C!--%20Packing%20--%3E%20%24%7Bt.item_packed%20!%3D%3D%20undefined%20%3F%20%60%20%3Cdiv%20style%3D%22margin%3A16px%200%208px%3Bcolor%3A%2364748b%3Bfont-size%3A10px%3Btext-transform%3Auppercase%3Bletter-spacing%3A.08em%3Bfont-weight%3A600%22%3EPacking%3C%2Fdiv%3E%20%24%7Bfield('Item%20Packed'%2C%20t.item_packed%20%3F%20'Yes'%20%2B%20(t.item_packed_at%20%3F%20'%20%C2%B7%20'%20%2B%20fmtShortDate(t.item_packed_at)%20%3A%20'')%20%3A%20'No')%7D%20%60%20%3A%20''%7D%20%3C!--%20Service%20Records%20--%3E%20%24%7Bt.service_records_count%20%3E%200%20%3F%20%60%20%3Cdiv%20style%3D%22margin%3A16px%200%208px%3Bcolor%3A%2364748b%3Bfont-size%3A10px%3Btext-transform%3Auppercase%3Bletter-spacing%3A.08em%3Bfont-weight%3A600%22%3EService%3C%2Fdiv%3E%20%24%7Bfield('Service%20Records'%2C%20t.service_records_count%20%2B%20'%20record'%20%2B%20(t.service_records_count%20!%3D%3D%201%20%3F%20's'%20%3A%20''))%7D%20%60%20%3A%20''%7D%20%3C!--%20Load%20more%20details%20button%20--%3E%20%3Cdiv%20style%3D%22margin-top%3A20px%22%3E%20%3Cbutton%20id%3D%22__tl_loadmore__%22%20onclick%3D%22__tlLoadDetails(%24%7Bt.id%7D)%22%20style%3D%22width%3A100%25%3Bbackground%3A%231e293b%3Bborder%3A1px%20solid%20%23334155%3Bcolor%3A%2394a3b8%3Bpadding%3A9px%3Bborder-radius%3A8px%3Bcursor%3Apointer%3Bfont-size%3A12px%22%3E%20Load%20Full%20Details%20(comments%2C%20issues%2C%20assets...)%20%3C%2Fbutton%3E%20%3Cdiv%20id%3D%22__tl_details_body__%22%3E%3C%2Fdiv%3E%20%3C%2Fdiv%3E%20%3C%2Fdiv%3E%60%3B%20panel.style.display%20%3D%20'flex'%3B%20panel.style.flexDirection%20%3D%20'column'%3B%20%7D%20function%20field(label%2C%20val%2C%20isStatus)%20%7B%20const%20display%20%3D%20(!val%20%7C%7C%20val%20%3D%3D%3D%20'null'%20%7C%7C%20val%20%3D%3D%3D%20null)%20%3F%20'%3Cspan%20style%3D%22color%3A%23334155%22%3E%E2%80%94%3C%2Fspan%3E'%20%3A%20isStatus%20%3F%20pill(val)%20%3A%20%60%3Cspan%20style%3D%22color%3A%23e2e8f0%22%3E%24%7Bval%7D%3C%2Fspan%3E%60%3B%20return%20%60%3Cdiv%20style%3D%22display%3Aflex%3Bjustify-content%3Aspace-between%3Balign-items%3Aflex-start%3Bpadding%3A7px%200%3Bborder-bottom%3A1px%20solid%20%231a2540%3Bgap%3A12px%22%3E%20%3Cspan%20style%3D%22color%3A%2364748b%3Bfont-size%3A12px%3Bwhite-space%3Anowrap%3Bflex-shrink%3A0%22%3E%24%7Blabel%7D%3C%2Fspan%3E%20%3Cspan%20style%3D%22font-size%3A12px%3Btext-align%3Aright%22%3E%24%7Bdisplay%7D%3C%2Fspan%3E%20%3C%2Fdiv%3E%60%3B%20%7D%20function%20trackingField(label%2C%20tracking%2C%20carrier)%20%7B%20if%20(!tracking)%20return%20field(label%2C%20null)%3B%20const%20url%20%3D%20carrier%20%26%26%20carrier.includes('singpost')%20%3F%20%60https%3A%20%3A%20%60https%3A%20return%20%60%3Cdiv%20style%3D%22display%3Aflex%3Bjustify-content%3Aspace-between%3Balign-items%3Acenter%3Bpadding%3A7px%200%3Bborder-bottom%3A1px%20solid%20%231a2540%3Bgap%3A12px%22%3E%20%3Cspan%20style%3D%22color%3A%2364748b%3Bfont-size%3A12px%3Bflex-shrink%3A0%22%3E%24%7Blabel%7D%3C%2Fspan%3E%20%3Ca%20href%3D%22%24%7Burl%7D%22%20target%3D%22_blank%22%20style%3D%22color%3A%233b82f6%3Bfont-size%3A12px%3Btext-decoration%3Anone%3Bfont-family%3Amonospace%22%3E%24%7Btracking%7D%20%E2%86%97%3C%2Fa%3E%20%3C%2Fdiv%3E%60%3B%20%7D%20window.__tlLoadDetails%20%3D%20async%20function%20(id)%20%7B%20const%20btn%20%3D%20document.getElementById('__tl_loadmore__')%3B%20const%20body%20%3D%20document.getElementById('__tl_details_body__')%3B%20if%20(btn)%20%7B%20btn.textContent%20%3D%20'Loading...'%3B%20btn.disabled%20%3D%20true%3B%20%7D%20try%20%7B%20const%20res%20%3D%20await%20fetch(%60%2Ftickets%2F%24%7Bid%7D%60%2C%20%7B%20credentials%3A%20'include'%20%7D)%3B%20const%20html%20%3D%20await%20res.text()%3B%20const%20parser%20%3D%20new%20DOMParser()%3B%20const%20doc%20%3D%20parser.parseFromString(html%2C%20'text%2Fhtml')%3B%20const%20descEl%20%3D%20doc.querySelector('%5Bname%3D%22description%22%5D')%20%7C%7C%20doc.querySelector('textarea%5Bid*%3D%22desc%22%5D')%3B%20const%20desc%20%3D%20descEl%3F.value%20%7C%7C%20descEl%3F.textContent%20%7C%7C%20''%3B%20const%20comments%20%3D%20Array.from(doc.querySelectorAll('.comment%2C%20%5Bclass*%3D%22comment-body%22%5D%2C%20%5Bdata-comment-id%5D')).map(c%20%3D%3E%20%7B%20const%20author%20%3D%20c.querySelector('%5Bclass*%3D%22author%22%5D%2C%20.comment-author%2C%20strong')%3F.textContent%3F.trim()%20%7C%7C%20''%3B%20const%20text%20%3D%20c.querySelector('p%2C%20.comment-text%2C%20%5Bclass*%3D%22message%22%5D')%3F.textContent%3F.trim()%20%7C%7C%20c.textContent%3F.trim().substring(0%2C%20200)%20%7C%7C%20''%3B%20const%20time%20%3D%20c.querySelector('time%2C%20%5Bclass*%3D%22time%22%5D%2C%20%5Bclass*%3D%22date%22%5D')%3F.textContent%3F.trim()%20%7C%7C%20''%3B%20return%20%7B%20author%2C%20text%2C%20time%20%7D%3B%20%7D).filter(c%20%3D%3E%20c.text%20%26%26%20c.text.length%20%3E%202).slice(0%2C%2010)%3B%20const%20issues%20%3D%20Array.from(doc.querySelectorAll('%5Bclass*%3D%22issue%22%5D%2C%20%5Bdata-issue-id%5D')).map(i%20%3D%3E%20(%7B%20text%3A%20i.textContent%3F.trim().substring(0%2C%20100)%20%7D)).filter(i%20%3D%3E%20i.text).slice(0%2C%205)%3B%20const%20assetEl%20%3D%20doc.querySelector('%5Bclass*%3D%22asset-tag%22%5D%2C%20%5Bdata-asset-id%5D%2C%20.asset-serial')%3B%20const%20asset%20%3D%20assetEl%3F.textContent%3F.trim()%20%7C%7C%20''%3B%20let%20detailsHtml%20%3D%20''%3B%20if%20(desc)%20%7B%20detailsHtml%20%2B%3D%20%60%3Cdiv%20style%3D%22margin-top%3A16px%22%3E%20%3Cdiv%20style%3D%22color%3A%2364748b%3Bfont-size%3A10px%3Btext-transform%3Auppercase%3Bletter-spacing%3A.08em%3Bfont-weight%3A600%3Bmargin-bottom%3A8px%22%3EDescription%3C%2Fdiv%3E%20%3Cdiv%20style%3D%22background%3A%230f172a%3Bborder-radius%3A8px%3Bpadding%3A12px%3Bcolor%3A%2394a3b8%3Bfont-size%3A12px%3Bline-height%3A1.6%3Bmax-height%3A140px%3Boverflow-y%3Aauto%3Bwhite-space%3Apre-wrap%22%3E%24%7Bdesc.substring(0%2C%20600)%7D%24%7Bdesc.length%20%3E%20600%20%3F%20'...'%20%3A%20''%7D%3C%2Fdiv%3E%20%3C%2Fdiv%3E%60%3B%20%7D%20if%20(asset)%20%7B%20detailsHtml%20%2B%3D%20%60%3Cdiv%20style%3D%22margin-top%3A16px%22%3E%20%3Cdiv%20style%3D%22color%3A%2364748b%3Bfont-size%3A10px%3Btext-transform%3Auppercase%3Bletter-spacing%3A.08em%3Bfont-weight%3A600%3Bmargin-bottom%3A8px%22%3EAsset%3C%2Fdiv%3E%20%3Cdiv%20style%3D%22color%3A%2310b981%3Bfont-size%3A13px%3Bfont-family%3Amonospace%3Bfont-weight%3A600%22%3E%24%7Basset%7D%3C%2Fdiv%3E%20%3C%2Fdiv%3E%60%3B%20%7D%20if%20(comments.length%20%3E%200)%20%7B%20detailsHtml%20%2B%3D%20%60%3Cdiv%20style%3D%22margin-top%3A16px%22%3E%20%3Cdiv%20style%3D%22color%3A%2364748b%3Bfont-size%3A10px%3Btext-transform%3Auppercase%3Bletter-spacing%3A.08em%3Bfont-weight%3A600%3Bmargin-bottom%3A8px%22%3EComments%20(%24%7Bcomments.length%7D)%3C%2Fdiv%3E%20%24%7Bcomments.map(c%20%3D%3E%20%60%20%3Cdiv%20style%3D%22background%3A%230f172a%3Bborder-radius%3A8px%3Bpadding%3A10px%2012px%3Bmargin-bottom%3A8px%3Bborder-left%3A2px%20solid%20%23334155%22%3E%20%3Cdiv%20style%3D%22display%3Aflex%3Bjustify-content%3Aspace-between%3Bmargin-bottom%3A4px%22%3E%20%3Cspan%20style%3D%22color%3A%233b82f6%3Bfont-size%3A11px%3Bfont-weight%3A600%22%3E%24%7Bc.author%20%7C%7C%20'Unknown'%7D%3C%2Fspan%3E%20%3Cspan%20style%3D%22color%3A%23475569%3Bfont-size%3A11px%22%3E%24%7Bc.time%7D%3C%2Fspan%3E%20%3C%2Fdiv%3E%20%3Cdiv%20style%3D%22color%3A%2394a3b8%3Bfont-size%3A12px%3Bline-height%3A1.5%22%3E%24%7Bc.text.substring(0%2C%20200)%7D%3C%2Fdiv%3E%20%3C%2Fdiv%3E%60).join('')%7D%20%3C%2Fdiv%3E%60%3B%20%7D%20if%20(issues.length%20%3E%200)%20%7B%20detailsHtml%20%2B%3D%20%60%3Cdiv%20style%3D%22margin-top%3A16px%22%3E%20%3Cdiv%20style%3D%22color%3A%2364748b%3Bfont-size%3A10px%3Btext-transform%3Auppercase%3Bletter-spacing%3A.08em%3Bfont-weight%3A600%3Bmargin-bottom%3A8px%22%3EIssues%20(%24%7Bissues.length%7D)%3C%2Fdiv%3E%20%24%7Bissues.map(i%20%3D%3E%20%60%3Cdiv%20style%3D%22background%3A%230f172a%3Bborder-radius%3A6px%3Bpadding%3A8px%2012px%3Bmargin-bottom%3A6px%3Bcolor%3A%2394a3b8%3Bfont-size%3A12px%22%3E%24%7Bi.text%7D%3C%2Fdiv%3E%60).join('')%7D%20%3C%2Fdiv%3E%60%3B%20%7D%20if%20(!detailsHtml)%20detailsHtml%20%3D%20%60%3Cdiv%20style%3D%22color%3A%23475569%3Bfont-size%3A12px%3Bmargin-top%3A12px%3Btext-align%3Acenter%22%3ENo%20additional%20details%20found.%20%3Ca%20href%3D%22%2Ftickets%2F%24%7Bid%7D%22%20target%3D%22_blank%22%20style%3D%22color%3A%233b82f6%22%3EOpen%20full%20ticket%20%E2%86%97%3C%2Fa%3E%3C%2Fdiv%3E%60%3B%20if%20(body)%20body.innerHTML%20%3D%20detailsHtml%3B%20if%20(btn)%20btn.remove()%3B%20%7D%20catch%20(e)%20%7B%20if%20(btn)%20%7B%20btn.textContent%20%3D%20'Failed%20to%20load%20%E2%80%94%20click%20to%20retry'%3B%20btn.disabled%20%3D%20false%3B%20%7D%20%7D%20%7D%3B%20window.__tlClosePanel%20%3D%20function%20()%20%7B%20selectedId%20%3D%20null%3B%20const%20panel%20%3D%20document.getElementById('__tl_panel__')%3B%20if%20(panel)%20panel.style.display%20%3D%20'none'%3B%20document.querySelectorAll('.__tl_row__').forEach(r%20%3D%3E%20r.style.background%20%3D%20'transparent')%3B%20%7D%3B%20function%20getFilters()%20%7B%20return%20%7B%20q%3A%20(document.getElementById('__tl_q__')%3F.value%20%7C%7C%20'').toLowerCase()%2C%20cat%3A%20document.getElementById('__tl_cat__')%3F.value%20%7C%7C%20''%2C%20st%3A%20document.getElementById('__tl_st__')%3F.value%20%7C%7C%20''%2C%20prio%3A%20document.getElementById('__tl_prio__')%3F.value%20%7C%7C%20''%2C%20queue%3A%20document.getElementById('__tl_queue__')%3F.value%20%7C%7C%20''%2C%20%7D%3B%20%7D%20function%20applyFilters()%20%7B%20const%20%7B%20q%2C%20cat%2C%20st%2C%20prio%2C%20queue%20%7D%20%3D%20getFilters()%3B%20filtered%20%3D%20raw().filter(t%20%3D%3E%20%7B%20if%20(q%20%26%26%20!%5Bt.id%2C%20t.subject%2C%20t.customer_name%2C%20t.assignee%2C%20t.queue%2C%20t.shipping_tracking%2C%20t.return_tracking%5D.join('%20').toLowerCase().includes(q))%20return%20false%3B%20if%20(cat%20%26%26%20t.category%20!%3D%3D%20cat)%20return%20false%3B%20if%20(st%20%26%26%20t.status%20!%3D%3D%20st)%20return%20false%3B%20if%20(prio%20%26%26%20t.priority%20!%3D%3D%20prio)%20return%20false%3B%20if%20(queue%20%26%26%20t.queue%20!%3D%3D%20queue)%20return%20false%3B%20return%20true%3B%20%7D)%3B%20page%20%3D%201%3B%20renderTable()%3B%20renderStats()%3B%20%7D%20function%20sortBy(col)%20%7B%20if%20(sortCol%20%3D%3D%3D%20col)%20sortDir%20*%3D%20-1%3B%20else%20%7B%20sortCol%20%3D%20col%3B%20sortDir%20%3D%201%3B%20%7D%20renderTable()%3B%20%7D%20function%20goToPage(p)%20%7B%20const%20maxPage%20%3D%20Math.ceil(filtered.length%20%2F%20PER_PAGE)%3B%20if%20(p%20%3C%201%20%7C%7C%20p%20%3E%20maxPage)%20return%3B%20page%20%3D%20p%3B%20renderTable()%3B%20%7D%20function%20renderStats()%20%7B%20const%20total%20%3D%20filtered.length%3B%20const%20byCat%20%3D%20%7B%7D%2C%20bySt%20%3D%20%7B%7D%3B%20filtered.forEach(t%20%3D%3E%20%7B%20byCat%5Bt.category%5D%20%3D%20(byCat%5Bt.category%5D%20%7C%7C%200)%20%2B%201%3B%20bySt%5Bt.status%5D%20%3D%20(bySt%5Bt.status%5D%20%7C%7C%200)%20%2B%201%3B%20%7D)%3B%20const%20catCards%20%3D%20Object.entries(byCat).sort((a%2C%20b)%20%3D%3E%20b%5B1%5D%20-%20a%5B1%5D).slice(0%2C%204).map((%5Bc%2C%20n%5D)%20%3D%3E%20%60%3Cdiv%20style%3D%22background%3A%231e293b%3Bborder-radius%3A8px%3Bpadding%3A10px%2014px%3Bmin-width%3A100px%3Bborder-left%3A3px%20solid%20%24%7BcatColor(c)%7D%3Bflex-shrink%3A0%22%3E%20%3Cdiv%20style%3D%22font-size%3A20px%3Bfont-weight%3A700%3Bcolor%3A%23f1f5f9%22%3E%24%7Bn%7D%3C%2Fdiv%3E%20%3Cdiv%20style%3D%22font-size%3A10px%3Bcolor%3A%2394a3b8%3Bmargin-top%3A2px%22%3E%24%7Bc%7D%3C%2Fdiv%3E%20%3C%2Fdiv%3E%60).join('')%3B%20const%20stCards%20%3D%20Object.entries(bySt).sort((a%2C%20b)%20%3D%3E%20b%5B1%5D%20-%20a%5B1%5D).slice(0%2C%205).map((%5Bs%2C%20n%5D)%20%3D%3E%20%60%3Cdiv%20style%3D%22background%3A%231e293b%3Bborder-radius%3A8px%3Bpadding%3A10px%2014px%3Bmin-width%3A100px%3Bborder-left%3A3px%20solid%20%24%7BsColor(s)%7D%3Bflex-shrink%3A0%22%3E%20%3Cdiv%20style%3D%22font-size%3A20px%3Bfont-weight%3A700%3Bcolor%3A%23f1f5f9%22%3E%24%7Bn%7D%3C%2Fdiv%3E%20%3Cdiv%20style%3D%22font-size%3A10px%3Bcolor%3A%2394a3b8%3Bmargin-top%3A2px%22%3E%24%7Bs%7D%3C%2Fdiv%3E%20%3C%2Fdiv%3E%60).join('')%3B%20const%20el%20%3D%20document.getElementById('__tl_stats__')%3B%20if%20(el)%20el.innerHTML%20%3D%20%60%20%3Cdiv%20style%3D%22background%3A%231e293b%3Bborder-radius%3A8px%3Bpadding%3A10px%2014px%3Bmin-width%3A90px%3Bborder-left%3A3px%20solid%20%233b82f6%3Bflex-shrink%3A0%22%3E%20%3Cdiv%20style%3D%22font-size%3A20px%3Bfont-weight%3A700%3Bcolor%3A%23f1f5f9%22%3E%24%7Btotal.toLocaleString()%7D%3C%2Fdiv%3E%20%3Cdiv%20style%3D%22font-size%3A10px%3Bcolor%3A%2394a3b8%3Bmargin-top%3A2px%22%3E%24%7Btotal%20%3D%3D%3D%20raw().length%20%3F%20'All%20Tickets'%20%3A%20'Filtered'%7D%3C%2Fdiv%3E%20%3C%2Fdiv%3E%20%3Cdiv%20style%3D%22width%3A1px%3Bbackground%3A%23334155%3Bmargin%3A0%204px%3Bflex-shrink%3A0%22%3E%3C%2Fdiv%3E%20%24%7BcatCards%7D%20%3Cdiv%20style%3D%22width%3A1px%3Bbackground%3A%23334155%3Bmargin%3A0%204px%3Bflex-shrink%3A0%22%3E%3C%2Fdiv%3E%20%24%7BstCards%7D%60%3B%20%7D%20function%20renderTable()%20%7B%20const%20sorted%20%3D%20%5B...filtered%5D.sort((a%2C%20b)%20%3D%3E%20%7B%20let%20av%2C%20bv%3B%20if%20(sortCol%20%3D%3D%3D%20'id')%20%7B%20av%20%3D%20a.id%3B%20bv%20%3D%20b.id%3B%20%7D%20else%20if%20(sortCol%20%3D%3D%3D%20'created')%20%7B%20av%20%3D%20a.created_at%3B%20bv%20%3D%20b.created_at%3B%20%7D%20else%20if%20(sortCol%20%3D%3D%3D%20'sla')%20%7B%20av%20%3D%20a.sla_days_remaining%20%3F%3F%20999%3B%20bv%20%3D%20b.sla_days_remaining%20%3F%3F%20999%3B%20%7D%20else%20%7B%20av%20%3D%20(a%5BsortCol%5D%20%7C%7C%20'').toLowerCase()%3B%20bv%20%3D%20(b%5BsortCol%5D%20%7C%7C%20'').toLowerCase()%3B%20%7D%20return%20av%20%3C%20bv%20%3F%20-sortDir%20%3A%20av%20%3E%20bv%20%3F%20sortDir%20%3A%200%3B%20%7D)%3B%20const%20totalPages%20%3D%20Math.ceil(sorted.length%20%2F%20PER_PAGE)%3B%20const%20pageTickets%20%3D%20sorted.slice((page%20-%201)%20*%20PER_PAGE%2C%20page%20*%20PER_PAGE)%3B%20document.querySelectorAll('.__tl_th__').forEach(th%20%3D%3E%20%7B%20const%20col%20%3D%20th.dataset.col%3B%20th.style.color%20%3D%20col%20%3D%3D%3D%20sortCol%20%3F%20'%233b82f6'%20%3A%20'%2364748b'%3B%20const%20arrow%20%3D%20th.querySelector('.__tl_arrow__')%3B%20if%20(arrow)%20arrow.textContent%20%3D%20col%20%3D%3D%3D%20sortCol%20%3F%20(sortDir%20%3D%3D%3D%201%20%3F%20'%E2%86%91'%20%3A%20'%E2%86%93')%20%3A%20'%E2%86%95'%3B%20%7D)%3B%20const%20tbody%20%3D%20document.getElementById('__tl_tbody__')%3B%20if%20(!tbody)%20return%3B%20tbody.innerHTML%20%3D%20pageTickets.map(t%20%3D%3E%20%7B%20const%20sla%20%3D%20t.sla_days_remaining%3B%20const%20slaColor%20%3D%20sla%20%3D%3D%3D%20null%20%3F%20'%23475569'%20%3A%20sla%20%3C%3D%200%20%3F%20'%23ef4444'%20%3A%20sla%20%3C%3D%202%20%3F%20'%23f97316'%20%3A%20'%2310b981'%3B%20const%20isSelected%20%3D%20t.id%20%3D%3D%20selectedId%3B%20return%20%60%3Ctr%20class%3D%22__tl_row__%22%20data-id%3D%22%24%7Bt.id%7D%22%20style%3D%22border-bottom%3A1px%20solid%20%231a2540%3Bcursor%3Apointer%3Bbackground%3A%24%7BisSelected%20%3F%20'%231e3a5f'%20%3A%20'transparent'%7D%22%20onmouseover%3D%22if(%24%7Bt.id%7D!%3D%3D__tlSelectedId())this.style.background%3D'%231e293b'%22%20onmouseout%3D%22if(%24%7Bt.id%7D!%3D%3D__tlSelectedId())this.style.background%3D'transparent'%22%20onclick%3D%22__tlOpen(%24%7Bt.id%7D)%22%3E%20%3Ctd%20style%3D%22padding%3A9px%2010px%3Bcolor%3A%2364748b%3Bfont-size%3A11px%3Bwhite-space%3Anowrap%22%3ETICK-%24%7Bt.id%7D%3C%2Ftd%3E%20%3Ctd%20style%3D%22padding%3A9px%2010px%3Bmax-width%3A260px%3Boverflow%3Ahidden%3Btext-overflow%3Aellipsis%3Bwhite-space%3Anowrap%3Bcolor%3A%23e2e8f0%3Bfont-size%3A13px%22%20title%3D%22%24%7B(t.subject%20%7C%7C%20'').replace(%2F%22%2Fg%2C%20%22'%22)%7D%22%3E%20%24%7Bt.subject%20%7C%7C%20''%7D%20%24%7Bt.customer_name%20%3F%20%60%3Cdiv%20style%3D%22font-size%3A11px%3Bcolor%3A%23475569%3Bmargin-top%3A1px%22%3E%24%7Bt.customer_name%7D%3C%2Fdiv%3E%60%20%3A%20''%7D%20%3C%2Ftd%3E%20%3Ctd%20style%3D%22padding%3A9px%2010px%3Bwhite-space%3Anowrap%22%3E%3Cspan%20style%3D%22color%3A%24%7BcatColor(t.category)%7D%3Bfont-size%3A11px%3Bfont-weight%3A600%22%3E%24%7Bt.category%20%7C%7C%20'%E2%80%94'%7D%3C%2Fspan%3E%3C%2Ftd%3E%20%3Ctd%20style%3D%22padding%3A9px%2010px%22%3E%24%7Bpill(t.status)%7D%3C%2Ftd%3E%20%3Ctd%20style%3D%22padding%3A9px%2010px%22%3E%24%7BprioPill(t.priority)%7D%3C%2Ftd%3E%20%3Ctd%20style%3D%22padding%3A9px%2010px%3Bcolor%3A%2364748b%3Bfont-size%3A12px%3Bwhite-space%3Anowrap%22%3E%24%7Bt.queue%20%7C%7C%20'%E2%80%94'%7D%3C%2Ftd%3E%20%3Ctd%20style%3D%22padding%3A9px%2010px%3Bcolor%3A%2394a3b8%3Bfont-size%3A12px%3Bwhite-space%3Anowrap%22%3E%24%7Bt.assignee%20%7C%7C%20'%E2%80%94'%7D%3C%2Ftd%3E%20%3Ctd%20style%3D%22padding%3A9px%2010px%3Bfont-size%3A12px%3Bfont-weight%3A600%3Bcolor%3A%24%7BslaColor%7D%3Bwhite-space%3Anowrap%22%3E%24%7Bsla%20!%3D%3D%20null%20%3F%20sla%20%2B%20'd'%20%3A%20'%E2%80%94'%7D%3C%2Ftd%3E%20%3Ctd%20style%3D%22padding%3A9px%2010px%3Bcolor%3A%23475569%3Bfont-size%3A11px%3Bwhite-space%3Anowrap%22%3E%24%7Bt.created_at%20%3F%20t.created_at.substring(0%2C%2010)%20%3A%20'%E2%80%94'%7D%3C%2Ftd%3E%20%3C%2Ftr%3E%60%3B%20%7D).join('')%3B%20const%20paginationEl%20%3D%20document.getElementById('__tl_pages__')%3B%20if%20(paginationEl)%20%7B%20const%20from%20%3D%20((page%20-%201)%20*%20PER_PAGE%20%2B%201).toLocaleString()%3B%20const%20to%20%3D%20Math.min(page%20*%20PER_PAGE%2C%20sorted.length).toLocaleString()%3B%20paginationEl.innerHTML%20%3D%20%60%3Cdiv%20style%3D%22display%3Aflex%3Balign-items%3Acenter%3Bgap%3A10px%3Bpadding%3A10px%2016px%22%3E%20%3Cspan%20style%3D%22color%3A%2364748b%3Bfont-size%3A12px%22%3E%24%7Bfrom%7D%E2%80%93%24%7Bto%7D%20of%20%24%7Bsorted.length.toLocaleString()%7D%3C%2Fspan%3E%20%3Cbutton%20onclick%3D%22__tlGoPage(%24%7Bpage%20-%201%7D)%22%20%24%7Bpage%20%3C%3D%201%20%3F%20'disabled'%20%3A%20''%7D%20style%3D%22background%3A%231e293b%3Bborder%3A1px%20solid%20%23334155%3Bcolor%3A%24%7Bpage%20%3C%3D%201%20%3F%20'%23334155'%20%3A%20'%2394a3b8'%7D%3Bpadding%3A3px%2010px%3Bborder-radius%3A6px%3Bcursor%3A%24%7Bpage%20%3C%3D%201%20%3F%20'default'%20%3A%20'pointer'%7D%3Bfont-size%3A13px%22%3E%E2%80%B9%3C%2Fbutton%3E%20%3Cspan%20style%3D%22color%3A%2394a3b8%3Bfont-size%3A12px%22%3EPage%20%24%7Bpage%7D%20of%20%24%7BtotalPages.toLocaleString()%7D%3C%2Fspan%3E%20%3Cbutton%20onclick%3D%22__tlGoPage(%24%7Bpage%20%2B%201%7D)%22%20%24%7Bpage%20%3E%3D%20totalPages%20%3F%20'disabled'%20%3A%20''%7D%20style%3D%22background%3A%231e293b%3Bborder%3A1px%20solid%20%23334155%3Bcolor%3A%24%7Bpage%20%3E%3D%20totalPages%20%3F%20'%23334155'%20%3A%20'%2394a3b8'%7D%3Bpadding%3A3px%2010px%3Bborder-radius%3A6px%3Bcursor%3A%24%7Bpage%20%3E%3D%20totalPages%20%3F%20'default'%20%3A%20'pointer'%7D%3Bfont-size%3A13px%22%3E%E2%80%BA%3C%2Fbutton%3E%20%3C%2Fdiv%3E%60%3B%20%7D%20document.getElementById('__tl_count__').textContent%20%3D%20%60%24%7Braw().length.toLocaleString()%7D%20tickets%60%3B%20%7D%20function%20opts(arr%2C%20placeholder)%20%7B%20return%20%60%3Coption%20value%3D%22%22%3E%24%7Bplaceholder%7D%3C%2Foption%3E%60%20%2B%20%5B...new%20Set(arr.filter(Boolean))%5D.sort().map(v%20%3D%3E%20%60%3Coption%3E%24%7Bv%7D%3C%2Foption%3E%60).join('')%3B%20%7D%20const%20tickets%20%3D%20raw()%3B%20const%20dash%20%3D%20document.createElement('div')%3B%20dash.id%20%3D%20'__tl_dash__'%3B%20dash.style.cssText%20%3D%20'position%3Afixed%3Binset%3A0%3Bz-index%3A2147483647%3Bbackground%3A%230f172a%3Bfont-family%3A-apple-system%2CBlinkMacSystemFont%2C%22Segoe%20UI%22%2Csans-serif%3Bdisplay%3Aflex%3Bflex-direction%3Acolumn%3Boverflow%3Ahidden'%3B%20dash.innerHTML%20%3D%20%60%20%3C!--%20Header%20--%3E%20%3Cdiv%20style%3D%22background%3A%231e293b%3Bborder-bottom%3A1px%20solid%20%23334155%3Bpadding%3A12px%2020px%3Bdisplay%3Aflex%3Balign-items%3Acenter%3Bjustify-content%3Aspace-between%3Bflex-shrink%3A0%22%3E%20%3Cdiv%20style%3D%22display%3Aflex%3Balign-items%3Acenter%3Bgap%3A10px%22%3E%20%3Cdiv%20style%3D%22width%3A8px%3Bheight%3A8px%3Bborder-radius%3A50%25%3Bbackground%3A%2310b981%3Bbox-shadow%3A0%200%206px%20%2310b981%3Banimation%3A__tl_pulse%202s%20infinite%22%3E%3C%2Fdiv%3E%20%3Cspan%20style%3D%22color%3A%23f1f5f9%3Bfont-size%3A16px%3Bfont-weight%3A700%22%3ETrueLog%20Ticket%20Dashboard%3C%2Fspan%3E%20%3Cspan%20id%3D%22__tl_count__%22%20style%3D%22background%3A%23334155%3Bcolor%3A%2394a3b8%3Bpadding%3A2px%2010px%3Bborder-radius%3A99px%3Bfont-size%3A12px%3Bfont-weight%3A600%22%3E%24%7Btickets.length.toLocaleString()%7D%20tickets%3C%2Fspan%3E%20%3C%2Fdiv%3E%20%3Cdiv%20style%3D%22display%3Aflex%3Balign-items%3Acenter%3Bgap%3A8px%22%3E%20%3Cspan%20style%3D%22color%3A%23475569%3Bfont-size%3A11px%22%3EClick%20a%20row%20to%20preview%20%C2%B7%20Click%20bookmark%20again%20to%20close%3C%2Fspan%3E%20%3Cbutton%20onclick%3D%22document.getElementById('__tl_dash__').remove()%22%20style%3D%22background%3A%23334155%3Bcolor%3A%2394a3b8%3Bborder%3Anone%3Bborder-radius%3A6px%3Bpadding%3A5px%2012px%3Bcursor%3Apointer%3Bfont-size%3A13px%22%3E%E2%9C%95%20Close%3C%2Fbutton%3E%20%3C%2Fdiv%3E%20%3C%2Fdiv%3E%20%3C!--%20Stats%20--%3E%20%3Cdiv%20id%3D%22__tl_stats__%22%20style%3D%22display%3Aflex%3Bgap%3A8px%3Bpadding%3A12px%2020px%3Boverflow-x%3Aauto%3Bflex-shrink%3A0%3Balign-items%3Astretch%22%3E%3C%2Fdiv%3E%20%3C!--%20Filters%20--%3E%20%3Cdiv%20style%3D%22padding%3A10px%2020px%3Bborder-bottom%3A1px%20solid%20%231e293b%3Bdisplay%3Aflex%3Balign-items%3Acenter%3Bgap%3A8px%3Bflex-wrap%3Awrap%3Bflex-shrink%3A0%3Bbackground%3A%230a1628%22%3E%20%3Cinput%20id%3D%22__tl_q__%22%20type%3D%22search%22%20placeholder%3D%22%F0%9F%94%8D%20Search%20tickets%2C%20IDs%2C%20customers%2C%20tracking...%22%20oninput%3D%22__tlFilter()%22%20style%3D%22background%3A%231e293b%3Bborder%3A1px%20solid%20%23334155%3Bcolor%3A%23e2e8f0%3Bpadding%3A7px%2012px%3Bborder-radius%3A6px%3Bfont-size%3A13px%3Boutline%3Anone%3Bflex%3A1%3Bmin-width%3A220px%3Bmax-width%3A380px%22%3E%20%3Cselect%20id%3D%22__tl_cat__%22%20onchange%3D%22__tlFilter()%22%20style%3D%22background%3A%231e293b%3Bborder%3A1px%20solid%20%23334155%3Bcolor%3A%23e2e8f0%3Bpadding%3A7px%2010px%3Bborder-radius%3A6px%3Bfont-size%3A12px%3Boutline%3Anone%3Bcursor%3Apointer%22%3E%24%7Bopts(tickets.map(t%20%3D%3E%20t.category)%2C%20'All%20Categories')%7D%3C%2Fselect%3E%20%3Cselect%20id%3D%22__tl_st__%22%20onchange%3D%22__tlFilter()%22%20style%3D%22background%3A%231e293b%3Bborder%3A1px%20solid%20%23334155%3Bcolor%3A%23e2e8f0%3Bpadding%3A7px%2010px%3Bborder-radius%3A6px%3Bfont-size%3A12px%3Boutline%3Anone%3Bcursor%3Apointer%22%3E%24%7Bopts(tickets.map(t%20%3D%3E%20t.status)%2C%20'All%20Statuses')%7D%3C%2Fselect%3E%20%3Cselect%20id%3D%22__tl_prio__%22%20onchange%3D%22__tlFilter()%22%20style%3D%22background%3A%231e293b%3Bborder%3A1px%20solid%20%23334155%3Bcolor%3A%23e2e8f0%3Bpadding%3A7px%2010px%3Bborder-radius%3A6px%3Bfont-size%3A12px%3Boutline%3Anone%3Bcursor%3Apointer%22%3E%24%7Bopts(tickets.map(t%20%3D%3E%20t.priority)%2C%20'All%20Priorities')%7D%3C%2Fselect%3E%20%3Cselect%20id%3D%22__tl_queue__%22%20onchange%3D%22__tlFilter()%22%20style%3D%22background%3A%231e293b%3Bborder%3A1px%20solid%20%23334155%3Bcolor%3A%23e2e8f0%3Bpadding%3A7px%2010px%3Bborder-radius%3A6px%3Bfont-size%3A12px%3Boutline%3Anone%3Bcursor%3Apointer%22%3E%24%7Bopts(tickets.map(t%20%3D%3E%20t.queue)%2C%20'All%20Queues')%7D%3C%2Fselect%3E%20%3Cbutton%20onclick%3D%22__tlReset()%22%20style%3D%22background%3A%23334155%3Bcolor%3A%2394a3b8%3Bborder%3Anone%3Bborder-radius%3A6px%3Bpadding%3A7px%2012px%3Bcursor%3Apointer%3Bfont-size%3A12px%22%3E%E2%9C%95%20Reset%3C%2Fbutton%3E%20%3C%2Fdiv%3E%20%3C!--%20Main%20content%3A%20table%20%2B%20detail%20panel%20--%3E%20%3Cdiv%20style%3D%22flex%3A1%3Bdisplay%3Aflex%3Boverflow%3Ahidden%22%3E%20%3C!--%20Table%20--%3E%20%3Cdiv%20style%3D%22flex%3A1%3Boverflow%3Aauto%3Bdisplay%3Aflex%3Bflex-direction%3Acolumn%22%3E%20%3Cdiv%20style%3D%22flex%3A1%3Boverflow%3Aauto%22%3E%20%3Ctable%20style%3D%22width%3A100%25%3Bborder-collapse%3Acollapse%3Bmin-width%3A700px%22%3E%20%3Cthead%3E%20%3Ctr%20style%3D%22position%3Asticky%3Btop%3A0%3Bbackground%3A%230f172a%3Bz-index%3A10%22%3E%20%24%7B%5B%5B'id'%2C'Ticket'%5D%2C%5B'subject'%2C'Subject'%5D%2C%5B'category'%2C'Category'%5D%2C%5B'status'%2C'Status'%5D%2C%5B'priority'%2C'Priority'%5D%2C%5B'queue'%2C'Queue'%5D%2C%5B'assignee'%2C'Assignee'%5D%2C%5B'sla'%2C'SLA'%5D%2C%5B'created'%2C'Created'%5D%5D.map((%5Bcol%2C%20label%5D)%20%3D%3E%20%60%3Cth%20class%3D%22__tl_th__%22%20data-col%3D%22%24%7Bcol%7D%22%20onclick%3D%22__tlSort('%24%7Bcol%7D')%22%20style%3D%22padding%3A8px%2010px%3Btext-align%3Aleft%3Bcolor%3A%24%7Bcol%20%3D%3D%3D%20sortCol%20%3F%20'%233b82f6'%20%3A%20'%2364748b'%7D%3Bfont-size%3A10px%3Btext-transform%3Auppercase%3Bletter-spacing%3A.06em%3Bfont-weight%3A600%3Bwhite-space%3Anowrap%3Bborder-bottom%3A1px%20solid%20%231e293b%3Bcursor%3Apointer%3Buser-select%3Anone%22%3E%20%24%7Blabel%7D%20%3Cspan%20class%3D%22__tl_arrow__%22%3E%24%7Bcol%20%3D%3D%3D%20sortCol%20%3F%20(sortDir%20%3D%3D%3D%201%20%3F%20'%E2%86%91'%20%3A%20'%E2%86%93')%20%3A%20'%E2%86%95'%7D%3C%2Fspan%3E%20%3C%2Fth%3E%60).join('')%7D%20%3C%2Ftr%3E%20%3C%2Fthead%3E%20%3Ctbody%20id%3D%22__tl_tbody__%22%3E%3C%2Ftbody%3E%20%3C%2Ftable%3E%20%3C%2Fdiv%3E%20%3Cdiv%20id%3D%22__tl_pages__%22%20style%3D%22border-top%3A1px%20solid%20%231e293b%3Bflex-shrink%3A0%3Bbackground%3A%230a1628%22%3E%3C%2Fdiv%3E%20%3C%2Fdiv%3E%20%3C!--%20Detail%20Panel%20(hidden%20by%20default)%20--%3E%20%3Cdiv%20id%3D%22__tl_panel__%22%20style%3D%22display%3Anone%3Bwidth%3A340px%3Bmin-width%3A340px%3Bborder-left%3A1px%20solid%20%23334155%3Bbackground%3A%230f172a%3Boverflow%3Ahidden%22%3E%3C%2Fdiv%3E%20%3C%2Fdiv%3E%20%3Cstyle%3E%20%40keyframes%20__tl_pulse%20%7B%200%25%2C100%25%7Bopacity%3A1%7D%2050%25%7Bopacity%3A.3%7D%20%7D%20%23__tl_dash__%20%3A%3A-webkit-scrollbar%7Bwidth%3A5px%3Bheight%3A5px%7D%20%23__tl_dash__%20%3A%3A-webkit-scrollbar-track%7Bbackground%3A%231e293b%7D%20%23__tl_dash__%20%3A%3A-webkit-scrollbar-thumb%7Bbackground%3A%23334155%3Bborder-radius%3A3px%7D%20%3C%2Fstyle%3E%60%3B%20document.body.appendChild(dash)%3B%20window.__tlFilter%20%3D%20applyFilters%3B%20window.__tlSort%20%3D%20sortBy%3B%20window.__tlGoPage%20%3D%20goToPage%3B%20window.__tlOpen%20%3D%20openDetail%3B%20window.__tlSelectedId%20%3D%20()%20%3D%3E%20selectedId%3B%20window.__tlReset%20%3D%20function%20()%20%7B%20%5B'__tl_q__'%2C%20'__tl_cat__'%2C%20'__tl_st__'%2C%20'__tl_prio__'%2C%20'__tl_queue__'%5D.forEach(id%20%3D%3E%20%7B%20const%20el%20%3D%20document.getElementById(id)%3B%20if%20(el)%20el.value%20%3D%20''%3B%20%7D)%3B%20applyFilters()%3B%20%7D%3B%20applyFilters()%3B%20%7D)()%3B" onclick="alert('Drag me to your bookmarks bar instead of clicking!'); return false;">&#127915; TrueLog Tickets</a>
-      </div>
-      <div class="tip"><strong>Can't drag?</strong> Right-click the button, choose "Bookmark this link", and save it to your Bookmarks Bar folder.</div>
+<!-- Header -->
+<div class="header">
+  <div class="header-left">
+    <div class="header-logo">
+      <svg viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="5" width="13" height="10" rx="1.5" stroke="white" stroke-width="1.5"/>
+        <path d="M5.5 5V3.5a.5.5 0 01.5-.5h5a.5.5 0 01.5.5V5" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>
+        <path d="M5.5 9.5h6M8.5 7.5v4" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
     </div>
+    <span class="header-title">Inbound Shipment Tracker</span>
+    <div class="header-divider"></div>
+    <span class="header-sub">Geodis Warehouse - India · Receiving Log</span>
   </div>
-
-  <div class="step">
-    <div class="step-num">2</div>
-    <div class="step-body">
-      <h3>Go to the TrueLog tickets page</h3>
-      <p>Navigate to <strong>inventory.truelog.com.sg/tickets/sf</strong> while logged in. The bookmarklet reads the <code>allTickets</code> data the page already loads into memory &mdash; all 2,834+ tickets.</p>
-    </div>
-  </div>
-
-  <div class="step">
-    <div class="step-num">3</div>
-    <div class="step-body">
-      <h3>Click the bookmark &mdash; then click any ticket</h3>
-      <p>The dashboard opens over the page. <strong>Click any row</strong> to open a detail panel on the right showing status, tracking info, SLA, assignee and more. Hit "Load Full Details" to also pull in the description and comments.</p>
-    </div>
-  </div>
-
-  <hr>
-
-  <div class="features">
-    <div class="feat"><strong>All 2,834+ tickets</strong>Reads everything the page already loaded</div>
-    <div class="feat"><strong>Click-to-preview panel</strong>Side panel shows ticket details inline</div>
-    <div class="feat"><strong>Full-text search</strong>Filter by subject, ID, customer, tracking #</div>
-    <div class="feat"><strong>5 filter dropdowns</strong>Category, Status, Priority, Queue, Assignee</div>
-    <div class="feat"><strong>Sortable columns</strong>Click any header to sort asc/desc</div>
-    <div class="feat"><strong>Live stat cards</strong>Category and status counts update as you filter</div>
-    <div class="feat"><strong>Paginated (50/page)</strong>Navigate through all tickets with prev/next</div>
-    <div class="feat"><strong>Load full details</strong>Fetches description, comments &amp; issues on demand</div>
-  </div>
-
-  <div class="refresh-tip">
-    <strong>To get fresh tickets:</strong> Refresh the TrueLog page (<code>F5</code>), then click the bookmarklet. The page re-fetches all tickets on every load &mdash; the bookmarklet just reads whatever is already there.
+  <div class="status-pill">
+    <div class="status-dot"></div>
+    Live
   </div>
 </div>
+
+<div class="main">
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('active')">
+      Active Shipments <span class="count" id="activeCount">0</span>
+    </button>
+    <button class="tab" onclick="switchTab('completed')">
+      Completed Shipments <span class="count" id="completedCount">0</span>
+    </button>
+  </div>
+
+  <!-- ACTIVE TAB -->
+  <div class="tab-panel active" id="panel-active">
+    <div class="form-card">
+      <div class="form-card-header">
+        <span class="form-card-title">New Shipment Entry</span>
+        <span class="shipment-badge" id="nextShipmentNum">IN-????</span>
+      </div>
+      <div class="form-body">
+        <div class="form-group">
+          <label>Carrier <span class="required">*</span></label>
+          <input type="text" id="f_carrier" placeholder="e.g. DHL, FedEx, UPS">
+        </div>
+        <div class="form-group">
+          <label>Tracking # <span class="optional">— optional</span></label>
+          <input type="text" id="f_tracking" placeholder="Tracking number">
+        </div>
+        <div class="form-group">
+          <label>Date of Receipt <span class="required">*</span></label>
+          <input type="date" id="f_date">
+        </div>
+        <div class="form-group">
+          <label>Type <span class="required">*</span></label>
+          <select id="f_type">
+            <option value="">— Select —</option>
+            <option value="Box">Box</option>
+            <option value="Pallet">Pallet</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Condition <span class="required">*</span></label>
+          <select id="f_condition">
+            <option value="">— Select —</option>
+            <option value="New">New</option>
+            <option value="Used">Used</option>
+          </select>
+        </div>
+        <div class="form-group half">
+          <label>Customer Name <span class="required">*</span></label>
+          <select id="f_customer">
+            <option value="">— Select customer —</option>
+            <option>3Cloud Solutions</option>
+            <option>8th Light</option>
+            <option>a16z</option>
+            <option>Abnormal Security</option>
+            <option>AffiniPay</option>
+            <option>Akasa</option>
+            <option>Anaplan</option>
+            <option>Apollo Graph</option>
+            <option>Ashby</option>
+            <option>Atrium</option>
+            <option>BallotReady</option>
+            <option>BDS Connected Solutions</option>
+            <option>Beamery</option>
+            <option>Benifex</option>
+            <option>BGB Group</option>
+            <option>Binti</option>
+            <option>Branching Minds</option>
+            <option>Braze</option>
+            <option>Brightwheel</option>
+            <option>Cambridge Mobile Telematics (CMT)</option>
+            <option>Cannabiz Media</option>
+            <option>ChargeBee</option>
+            <option>Cloudflare</option>
+            <option>Coalition, Inc.</option>
+            <option>ConcertAI</option>
+            <option>Cority</option>
+            <option>Corporate Finance Institute</option>
+            <option>Cover Genius</option>
+            <option>Cresta</option>
+            <option>CyberCoders</option>
+            <option>Cyera</option>
+            <option>Digital.ai</option>
+            <option>Discord</option>
+            <option>Docebo</option>
+            <option>Dotdigital</option>
+            <option>Earnest Analytics</option>
+            <option>ECI Software Solutions</option>
+            <option>Fabulous</option>
+            <option>Finfare</option>
+            <option>Firstbase</option>
+            <option>Fortis Games</option>
+            <option>GAN Integrity</option>
+            <option>HackerRank</option>
+            <option>Hackerone</option>
+            <option>Hotel Engine</option>
+            <option>Houzz</option>
+            <option>Intelligent Growth Solutions</option>
+            <option>JumpCloud</option>
+            <option>Kallidus</option>
+            <option>Kinsta</option>
+            <option>Kleiner Perkins</option>
+            <option>LastPass</option>
+            <option>Lattice</option>
+            <option>Life360</option>
+            <option>LogicallyAI</option>
+            <option>Lokalise</option>
+            <option>Matillion</option>
+            <option>MedTrainer</option>
+            <option>Mercari</option>
+            <option>Mews</option>
+            <option>Momentus</option>
+            <option>MoonPay</option>
+            <option>Motion</option>
+            <option>Movable Ink</option>
+            <option>Mysten Labs</option>
+            <option>Nanoramic Laboratories</option>
+            <option>Neo4j</option>
+            <option>New Relic</option>
+            <option>Nylas</option>
+            <option>ONE</option>
+            <option>OneTrust</option>
+            <option>OpenGov</option>
+            <option>Otonomee</option>
+            <option>Outrider</option>
+            <option>Pacvue</option>
+            <option>Pantheon Systems</option>
+            <option>Papa</option>
+            <option>Pax8</option>
+            <option>Paxos</option>
+            <option>Permutive</option>
+            <option>Phaidra</option>
+            <option>Postman</option>
+            <option>Prepared</option>
+            <option>Prison Fellowship</option>
+            <option>Productboard</option>
+            <option>Push Gaming</option>
+            <option>Railbookers Group</option>
+            <option>Refugee Rights</option>
+            <option>Replicant</option>
+            <option>SandboxAQ</option>
+            <option>SeatGeek</option>
+            <option>Secureframe</option>
+            <option>SentinelOne</option>
+            <option>Shopmonkey</option>
+            <option>Sidecar Health</option>
+            <option>Sift</option>
+            <option>Smile.io</option>
+            <option>SnapCare</option>
+            <option>Sorare</option>
+            <option>Sovos</option>
+            <option>Spotify</option>
+            <option>Sprig</option>
+            <option>Sprout Social</option>
+            <option>Stack Overflow</option>
+            <option>Staffbase</option>
+            <option>Sterling</option>
+            <option>Strava</option>
+            <option>Sui Foundation</option>
+            <option>Synthesia</option>
+            <option>Sysdig</option>
+            <option>Tanium</option>
+            <option>Tessian</option>
+            <option>Teylor</option>
+            <option>The Energy Foundation</option>
+            <option>TheMathCompany</option>
+            <option>Thrive Global</option>
+            <option>TorchLight</option>
+            <option>Trove</option>
+            <option>Typeform</option>
+            <option>UiPath</option>
+            <option>Varo Bank</option>
+            <option>Venly</option>
+            <option>Veramed</option>
+            <option>Verint Systems, Inc.</option>
+            <option>Verse</option>
+            <option>Wikifactory</option>
+            <option>Wise</option>
+            <option>Wisp</option>
+            <option>Xeneta</option>
+            <option>YouGov</option>
+            <option>Zenbusiness</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Quantity Received <span class="required">*</span></label>
+          <input type="number" id="f_qty" min="1" placeholder="0" oninput="onQtyChange()">
+        </div>
+        <div class="form-group">
+          <label>PO Number</label>
+          <input type="text" id="f_po" placeholder="PO-XXXX">
+        </div>
+        <div class="form-group half">
+          <label>Product Description</label>
+          <div class="ac-wrap">
+            <input type="text" id="f_desc" placeholder="Search by description or MPN..." autocomplete="off" oninput="onDescInput()" onkeydown="onDescKeydown(event)">
+            <input type="hidden" id="f_skuId">
+            <div class="ac-dropdown" id="acDropdown"></div>
+            <div class="sku-id-display" id="skuIdDisplay"></div>
+          </div>
+        </div>
+        <div class="form-group half">
+          <label>Shipment Comments <span class="optional">— optional</span></label>
+          <textarea id="f_comments" placeholder="Any additional notes about this shipment"></textarea>
+        </div>
+        <div class="form-group half">
+          <label>Serial Number(s) <span class="optional">— type directly or use popup · optional</span></label>
+          <div class="serial-row">
+            <input type="text" id="f_serials" placeholder="SN-001, SN-002, SN-003… or leave blank">
+            <button class="serial-popup-btn" onclick="openSerialModal()" title="Open guided serial entry popup">⊞</button>
+          </div>
+        </div>
+      </div>
+      <div class="form-footer">
+        <button class="btn btn-ghost" onclick="clearForm()">Clear</button>
+        <button class="btn btn-primary" id="submitBtn" onclick="submitShipment()">
+          <span id="submitBtnText">Submit Shipment</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-header">
+        <span class="table-title">Active Shipments</span>
+        <button class="refresh-btn" onclick="loadActive()">↻ Refresh</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Shipment #</th><th>Carrier</th><th>Tracking #</th><th>Date Received</th>
+              <th>Type</th><th>Customer</th><th>Condition</th>
+              <th>Qty</th><th>SKU ID</th><th>Description</th><th>Comments</th><th>Serials</th>
+              <th>PO Number</th><th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="activeBody">
+            <tr class="loading-row"><td colspan="14"><span class="spinner"></span>&nbsp; Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPLETED TAB -->
+  <div class="tab-panel" id="panel-completed">
+    <div class="table-card">
+      <div class="table-header">
+        <span class="table-title">Completed Shipments</span>
+        <button class="refresh-btn" onclick="loadCompleted()">↻ Refresh</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Shipment #</th><th>Carrier</th><th>Tracking #</th><th>Date Received</th>
+              <th>Type</th><th>Customer</th><th>Condition</th>
+              <th>Qty</th><th>SKU ID</th><th>Description</th><th>Comments</th><th>Serials</th>
+              <th>PO Number</th><th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="completedBody">
+            <tr class="loading-row"><td colspan="14"><span class="spinner"></span>&nbsp; Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Serial Modal -->
+<div class="modal-overlay" id="serialModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Guided Serial Entry</span>
+      <button class="modal-close" onclick="closeSerialModal()">✕</button>
+    </div>
+    <div class="modal-body" id="serialInputs"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeSerialModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmSerials()">Confirm Serials</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <div class="toast-dot"></div>
+  <span id="toastMsg"></span>
+</div>
+
+<script>
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyoBke7y_qq6Y7mwQSccO1J5GDHV2cThO9E3ZoDeqqdSdeaGr0b0dd_pc7PMQy7dZGm/exec';
+
+let activeData = [];
+let completedData = [];
+let acHighlight = -1;
+let acDebounce = null;
+
+window.onload = () => {
+  document.getElementById('f_date').value = new Date().toISOString().split('T')[0];
+  loadActive();
+  loadCompleted();
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.ac-wrap')) closeAutocomplete();
+  });
+};
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    t.classList.toggle('active', (i === 0 && tab === 'active') || (i === 1 && tab === 'completed'));
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + tab).classList.add('active');
+}
+
+async function apiCall(params) {
+  params._t = Date.now();
+  const url = WEB_APP_URL + '?' + new URLSearchParams(params).toString();
+  const res = await fetch(url, { cache: 'no-store' });
+  return res.json();
+}
+
+async function loadActive() {
+  document.getElementById('activeBody').innerHTML =
+    '<tr class="loading-row"><td colspan="14"><span class="spinner"></span>&nbsp; Loading…</td></tr>';
+  try {
+    const data = await apiCall({ action: 'getShipments' });
+    activeData = data.rows || [];
+    renderActiveTable();
+    updateNextShipmentNum();
+  } catch(e) { showToast('Failed to load active shipments', 'error'); }
+}
+
+async function loadCompleted() {
+  document.getElementById('completedBody').innerHTML =
+    '<tr class="loading-row"><td colspan="14"><span class="spinner"></span>&nbsp; Loading…</td></tr>';
+  try {
+    const data = await apiCall({ action: 'getCompleted' });
+    const rows = data.rows || [];
+    const seen = new Set();
+    completedData = rows.filter(row => {
+      if (seen.has(row[0])) return false;
+      seen.add(row[0]);
+      return true;
+    });
+    renderCompletedTable();
+  } catch(e) { showToast('Failed to load completed shipments', 'error'); }
+}
+
+function renderActiveTable() {
+  const tbody = document.getElementById('activeBody');
+  document.getElementById('activeCount').textContent = activeData.length;
+  if (!activeData.length) {
+    tbody.innerHTML = `<tr><td colspan="14"><div class="empty-state">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 3H8l-2 4h12l-2-4z"/></svg>
+      <p>No active shipments</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = [...activeData].reverse().map(r => buildRow(r, 'active')).join('');
+}
+
+function renderCompletedTable() {
+  const tbody = document.getElementById('completedBody');
+  document.getElementById('completedCount').textContent = completedData.length;
+  if (!completedData.length) {
+    tbody.innerHTML = `<tr><td colspan="14"><div class="empty-state">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+      <p>No completed shipments</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = [...completedData].reverse().map(r => buildRow(r, 'completed')).join('');
+}
+
+function buildRow(row, type) {
+  const [shipNum, carrier, date, rtype, customer, condition, qty, desc, serials, po, tracking, comments, skuId] = row;
+  const typeBadge = rtype === 'Pallet'
+    ? `<span class="badge badge-pallet">Pallet</span>`
+    : `<span class="badge badge-box">Box</span>`;
+  const condBadge = condition === 'New'
+    ? `<span class="badge badge-new">New</span>`
+    : `<span class="badge badge-used">Used</span>`;
+  const actionBtn = type === 'active'
+    ? `<button class="action-btn btn-complete" onclick="toggleStatus('${shipNum}')">✓ Complete</button>`
+    : `<button class="action-btn btn-reactivate" onclick="toggleStatus('${shipNum}')">↩ Reactivate</button>`;
+  const trunc = (s, n) => s && s.length > n ? s.substring(0, n) + '…' : (s || '—');
+
+  return `<tr>
+    <td class="td-shipnum">${shipNum}</td>
+    <td>${carrier || '—'}</td>
+    <td class="td-mono">${tracking || '—'}</td>
+    <td class="td-date">${date || '—'}</td>
+    <td>${typeBadge}</td>
+    <td>${customer || '—'}</td>
+    <td>${condBadge}</td>
+    <td style="font-weight:600;font-family:var(--mono)">${qty || '—'}</td>
+    <td class="td-mono">${skuId || '—'}</td>
+    <td title="${desc || ''}">${trunc(desc, 28)}</td>
+    <td title="${comments || ''}">${trunc(comments, 28)}</td>
+    <td class="td-mono" title="${serials || ''}">${trunc(serials, 28)}</td>
+    <td class="td-mono">${po || '—'}</td>
+    <td>${actionBtn}</td>
+  </tr>`;
+}
+
+function updateNextShipmentNum() {
+  const all = [...activeData, ...completedData];
+  let max = 0;
+  all.forEach(row => {
+    const val = row[0];
+    if (typeof val === 'string' && val.startsWith('IN-')) {
+      const n = parseInt(val.replace('IN-', ''), 10);
+      if (!isNaN(n) && n > max) max = n;
+    }
+  });
+  document.getElementById('nextShipmentNum').textContent = 'IN-' + String(max + 1).padStart(4, '0');
+}
+
+function onQtyChange() {
+  document.getElementById('f_serials').value = '';
+}
+
+// ── Serial modal ──────────────────────────────────────────
+function openSerialModal() {
+  const qty = parseInt(document.getElementById('f_qty').value, 10);
+  if (!qty || qty < 1) {
+    showToast('Enter Quantity Received first', 'error');
+    return;
+  }
+  const existing = document.getElementById('f_serials').value;
+  const existingList = existing ? existing.split(',').map(s => s.trim()) : [];
+
+  const body = document.getElementById('serialInputs');
+  body.innerHTML = `<p class="modal-hint">One text box per unit. All fields are optional — leave blank to skip.</p>`;
+  for (let i = 0; i < qty; i++) {
+    body.innerHTML += `<div class="serial-input-row">
+      <span class="serial-index">${i + 1}</span>
+      <input class="serial-text-input" id="serial_${i}" type="text" placeholder="Serial #${i+1}" value="${existingList[i] || ''}">
+    </div>`;
+  }
+  document.getElementById('serialModal').classList.add('open');
+  setTimeout(() => document.getElementById('serial_0')?.focus(), 180);
+}
+
+function closeSerialModal() {
+  document.getElementById('serialModal').classList.remove('open');
+}
+
+function confirmSerials() {
+  const qty = parseInt(document.getElementById('f_qty').value, 10);
+  const serials = [];
+  for (let i = 0; i < qty; i++) {
+    const val = document.getElementById('serial_' + i)?.value.trim();
+    if (val) serials.push(val);
+  }
+
+  // Check for duplicates before confirming
+  if (serials.length) {
+    const dup = findDuplicateSerial(serials);
+    if (dup) {
+      alert(`Serial already entered in Shipment number ${dup.shipmentNumber}\n\nDuplicate serial: ${dup.serial}`);
+      return;
+    }
+  }
+
+  document.getElementById('f_serials').value = serials.join(', ');
+  closeSerialModal();
+  if (serials.length) showToast(`${serials.length} serial${serials.length > 1 ? 's' : ''} recorded`, 'success');
+}
+
+// ── Serial duplicate check ───────────────────────────────
+function findDuplicateSerial(serialList) {
+  const allShipments = [...activeData, ...completedData];
+  for (const serial of serialList) {
+    for (const row of allShipments) {
+      const existingSerials = String(row[8] || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+      if (existingSerials.includes(serial.toLowerCase())) {
+        return { serial, shipmentNumber: row[0] };
+      }
+    }
+  }
+  return null;
+}
+
+// ── Autocomplete (server-side search) ────────────────────
+function onDescInput() {
+  clearTimeout(acDebounce);
+  const val = document.getElementById('f_desc').value.trim();
+  document.getElementById('f_skuId').value = '';
+  document.getElementById('skuIdDisplay').textContent = '';
+  if (val.length < 2) { closeAutocomplete(); return; }
+  acDebounce = setTimeout(() => searchSKUs(val), 350);
+}
+
+async function searchSKUs(query) {
+  const dd = document.getElementById('acDropdown');
+  acHighlight = -1;
+  dd.innerHTML = '<div class="ac-loading"><span class="spinner"></span> Searching...</div>';
+  dd.classList.add('open');
+
+  try {
+    const data = await apiCall({ action: 'searchSKU', query });
+    const matches = data.rows || [];
+    if (!matches.length) {
+      dd.innerHTML = '<div class="ac-no-results">No matching SKUs found — you can still type a custom description</div>';
+      return;
+    }
+    dd.innerHTML = matches.map((sku, i) =>
+      `<div class="ac-item" data-index="${i}" onclick="selectSKU(${i})" onmouseenter="acHighlight=${i};highlightAC()">
+        <div class="ac-item-desc">${escHtml(sku[1] || '')}</div>
+        <div class="ac-item-mpn">${escHtml(sku[2] || '—')}</div>
+      </div>`
+    ).join('');
+    dd._matches = matches;
+  } catch(e) {
+    dd.innerHTML = '<div class="ac-no-results">Search failed — you can still type a custom description</div>';
+  }
+}
+
+function selectSKU(index) {
+  const dd = document.getElementById('acDropdown');
+  const matches = dd._matches;
+  if (!matches || !matches[index]) return;
+  const sku = matches[index];
+  document.getElementById('f_desc').value = sku[1] || '';
+  document.getElementById('f_skuId').value = sku[0] || '';
+  document.getElementById('skuIdDisplay').textContent = sku[0] ? 'SKU: ' + sku[0] : '';
+  closeAutocomplete();
+}
+
+function closeAutocomplete() {
+  document.getElementById('acDropdown').classList.remove('open');
+  acHighlight = -1;
+}
+
+function highlightAC() {
+  const items = document.querySelectorAll('#acDropdown .ac-item');
+  items.forEach((el, i) => el.classList.toggle('highlighted', i === acHighlight));
+}
+
+function onDescKeydown(e) {
+  const dd = document.getElementById('acDropdown');
+  if (!dd.classList.contains('open') || !dd._matches) return;
+  const max = dd._matches.length;
+  if (e.key === 'ArrowDown') { e.preventDefault(); acHighlight = (acHighlight + 1) % max; highlightAC(); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); acHighlight = (acHighlight - 1 + max) % max; highlightAC(); }
+  else if (e.key === 'Enter' && acHighlight >= 0) { e.preventDefault(); selectSKU(acHighlight); }
+  else if (e.key === 'Escape') { closeAutocomplete(); }
+}
+
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// ── Submit ────────────────────────────────────────────────
+async function submitShipment() {
+  const carrier   = document.getElementById('f_carrier').value.trim();
+  const tracking  = document.getElementById('f_tracking').value.trim();
+  const date      = document.getElementById('f_date').value;
+  const type      = document.getElementById('f_type').value;
+  const condition = document.getElementById('f_condition').value;
+  const customer  = document.getElementById('f_customer').value.trim();
+  const qty       = document.getElementById('f_qty').value;
+  const po        = document.getElementById('f_po').value.trim();
+  const desc      = document.getElementById('f_desc').value.trim();
+  const skuId     = document.getElementById('f_skuId').value.trim();
+  const comments  = document.getElementById('f_comments').value.trim();
+  const serials   = document.getElementById('f_serials').value.trim();
+
+  if (!carrier || !date || !type || !condition || !customer || !qty) {
+    showToast('Please fill in all required fields', 'error');
+    return;
+  }
+
+  // Check for duplicate serial numbers
+  if (serials) {
+    const serialList = serials.split(',').map(s => s.trim()).filter(Boolean);
+    const dup = findDuplicateSerial(serialList);
+    if (dup) {
+      alert(`Serial already entered in Shipment number ${dup.shipmentNumber}\n\nDuplicate serial: ${dup.serial}`);
+      return;
+    }
+  }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  document.getElementById('submitBtnText').innerHTML = '<span class="spinner"></span>&nbsp;Submitting…';
+
+  try {
+    const result = await apiCall({
+      action: 'addShipment',
+      carrier, trackingNumber: tracking, dateOfReceipt: date, type, condition,
+      customerName: customer, quantityReceived: qty,
+      poNumber: po, productDescription: desc, skuId, shipmentComments: comments, serialNumbers: serials
+    });
+    if (result.success) {
+      showToast(`${result.shipmentNumber} recorded successfully`, 'success');
+      clearForm();
+      await loadActive();
+    } else {
+      showToast('Error: ' + (result.error || 'Unknown error'), 'error');
+    }
+  } catch(e) {
+    showToast('Network error. Please try again.', 'error');
+  }
+
+  btn.disabled = false;
+  document.getElementById('submitBtnText').textContent = 'Submit Shipment';
+}
+
+// ── Toggle status ─────────────────────────────────────────
+async function toggleStatus(shipmentNumber) {
+  try {
+    const result = await apiCall({ action: 'toggleStatus', shipmentNumber });
+    if (result.success) {
+      showToast(`${shipmentNumber} moved to ${result.movedTo}`, 'success');
+      await loadActive();
+      await loadCompleted();
+    } else {
+      showToast('Error: ' + (result.error || 'Unknown'), 'error');
+    }
+  } catch(e) { showToast('Network error. Please try again.', 'error'); }
+}
+
+// ── Clear form ────────────────────────────────────────────
+function clearForm() {
+  ['f_carrier','f_tracking','f_type','f_condition','f_customer','f_qty','f_po','f_desc','f_skuId','f_comments','f_serials'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('skuIdDisplay').textContent = '';
+  document.getElementById('f_date').value = new Date().toISOString().split('T')[0];
+}
+
+// ── Toast ─────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.className = 'toast ' + type + ' show';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+document.getElementById('serialModal').addEventListener('click', function(e) {
+  if (e.target === this) closeSerialModal();
+});
+
+// Debug: confirm all functions loaded
+console.log('All functions loaded successfully');
+</script>
 </body>
 </html>
